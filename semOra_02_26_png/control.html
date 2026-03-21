@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Control Lower Third</title>
+<style>
+  body { background:#111; color:#fff; font-family: Arial, sans-serif; padding:20px; }
+  input { width:100%; padding:30px; font-size: 25px; margin-bottom:10px; box-sizing: border-box; }
+  .controls { display:flex; gap:10px; margin-bottom:10px; }
+  button { padding:20px; cursor:pointer; font-weight: bold; }
+  #add { background:#2e7d32; color:#fff; border:none; font-size: 20px;}
+  #del { background:#555; color:#fff; border:none; font-size: 20px;}
+  #play { background:#c62828; color:#fff; border:none; flex-grow: 1; font-size: 20px; }
+  select { width:100%; height:250px; font-size: 25px; padding: 5px;}
+  .warning-box { background: #ff9800; color: #000; padding: 20px; border-radius: 5px; text-align: center; margin-top:10px; font-size:12px; font-size: 20px;}
+</style>
+</head>
+<body>
+
+<h2>CONTROL</h2>
+<input id="t1" placeholder="Texto 1">
+<input id="t2" placeholder="Texto 2">
+
+<div class="controls">
+  <button id="add" onclick="guardar()">+</button>
+  <button id="del" onclick="eliminar()">−</button>
+  <button id="play" onclick="lanzarAnimacion()">▶ PLAY (LANZAR AL AIRE)</button>
+</div>
+
+<select id="lista" size="10" onchange="cargar()"></select>
+<div class="warning-box">⚠️ Al seleccionar de la lista, se carga el texto pero NO se anima. Usa el botón rojo para lanzar.</div>
+
+<script>
+const API = "http://localhost:3000";
+const t1 = document.getElementById("t1");
+const t2 = document.getElementById("t2");
+const lista = document.getElementById("lista");
+let presets = [];
+
+fetch(API + "/presets").then(r => r.json()).then(data => { presets = data; renderLista(); });
+
+function renderLista() {
+  lista.innerHTML = "";
+  presets.forEach((p, i) => {
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = `${p.texto1} — ${p.texto2}`;
+    lista.appendChild(opt);
+  });
+}
+
+function guardar() {
+  if (!t1.value && !t2.value) return;
+  presets.push({ texto1: t1.value, texto2: t2.value });
+  sync();
+}
+
+function eliminar() {
+  if (lista.selectedIndex < 0) return;
+  presets.splice(lista.selectedIndex, 1);
+  sync();
+}
+
+function cargar() {
+  const p = presets[lista.selectedIndex];
+  t1.value = p.texto1;
+  t2.value = p.texto2;
+}
+
+// ESTA FUNCIÓN ENVÍA EL TEXTO Y EL DISPARO
+function lanzarAnimacion() {
+  fetch(API + "/set", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      texto1: t1.value,
+      texto2: t2.value,
+      timestamp: Date.now() // Esto le dice al visual que "ya puede animar"
+    })
+  });
+}
+
+function sync() {
+  fetch(API + "/presets", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(presets)
+  }).then(() => renderLista());
+}
+</script>
+</body>
+</html>

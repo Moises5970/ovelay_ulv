@@ -1,0 +1,179 @@
+<!doctype html>
+
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Overlay Suave</title>
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+
+        background: transparent;
+        overflow: hidden;
+      }
+
+      #scene {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+      }
+
+      /* Contenedor para el punto de anclaje central */
+
+      .anchor-center {
+        position: absolute;
+        left: 260px; /* 50% - 678px de tu código GWD */
+        top: 865px; /* 50% + 335px de tu código GWD */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ===== CÍRCULO (Animado con Scale) ===== */
+
+      .circle {
+        position: absolute;
+        width: 98px;
+        height: 98px;
+        background: white;
+        border-radius: 50%;
+        transform: scale(0); /* Empieza en 0 */
+        animation: circleAnim 8s ease-in-out 1s forwards;
+        will-change: transform, opacity;
+      }
+
+      @keyframes circleAnim {
+        0% {transform: scale(0); opacity: 0;}
+        4% {transform: scale(1); opacity: 1;}
+        92% {transform: scale(1); opacity: 1;}
+        100% {transform: scale(0); opacity: 0;}
+      }
+
+      /* ===== LOGO (Animado con Scale) ===== */
+
+      .logo {
+        position: absolute;
+        width: 120px;
+        height: auto;
+        transform: scale(0);
+        transform-origin: center center;
+        opacity: 0;
+        animation: logoAnim 7.6s cubic-bezier(.4,0,.2,1) 1.2s forwards;
+        backface-visibility: hidden;
+        will-change: transform, opacity;
+      }
+
+      @keyframes logoAnim {
+        2% {transform: scale(1); opacity: 0;}
+        12% {transform: scale(1); opacity: 1;}
+        92% {transform: scale(1); opacity: 1;}
+        100% {transform: scale(0); opacity: 0;}
+      }
+
+      /* ===== RECTÁNGULO ===== */
+
+      .rect {
+        position: absolute;
+        top: 800px;
+        left: 150px;
+        height: 130px;
+        width: 900px;              /* ancho FINAL fijo */
+        background: rgb(11, 30, 61);
+        border-radius: 35px;
+        opacity: 0;
+        transform: scaleX(0);
+        transform-origin: left center; /* MUY IMPORTANTE */
+        animation: rectAnim 10s cubic-bezier(.4,0,.2,1) forwards;
+        will-change: transform, opacity;
+      }
+
+      @keyframes rectAnim {
+        0%   { transform: scaleX(0); opacity: 0; }
+        8%   { transform: scaleX(1); opacity: 1; }
+        92%  { transform: scaleX(1); opacity: 1; }
+        100% { transform: scaleX(0); opacity: 0; }
+      }
+
+      /* ===== TEXTOS ===== */
+
+      .texto {
+        position: absolute;
+        left: 350px;
+        font-family: "AdventSans-Logo", sans-serif;
+        color: white;
+        opacity: 0;
+        animation: textAnim 7.4s ease-out 1.4s forwards;
+      }
+
+      #texto1 {
+        top: 832px;
+        font-size: 34px;
+        font-weight: bold;
+      }
+
+      #texto2 {
+        top: 870px;
+        font-size: 24px;
+        font-style: italic;
+      }
+
+      @keyframes textAnim {
+        1% {
+          opacity: 0;
+          transform: translateX(-15px);
+        }
+        12% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        93% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      @font-face {
+        font-family: AdventSans-Logo;
+
+        src: url("assets/AdventSans-Regular.otf");
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="scene">
+      <div class="rect"></div>
+
+      <div class="anchor-center">
+        <div class="circle"></div>
+        <img class="logo" src="assets/logo IASD.png">
+      </div>
+
+      <div id="texto1" class="texto"></div>
+      <div id="texto2" class="texto"></div>
+    </div>
+
+    <script>
+    async function actualizarTexto() {
+      try {
+        const res = await fetch("http://localhost:3000/textos");
+        const data = await res.json();
+
+        document.getElementById("texto1").textContent = data.texto1 || "";
+        document.getElementById("texto2").textContent = data.texto2 || "";
+      } catch (e) {}
+    }
+
+    // 🔁 polling clásico (broadcast-safe)
+    setInterval(actualizarTexto, 200);
+    </script>
+    </body>
+</html>
