@@ -1,0 +1,30 @@
+[
+    {
+        "label": "Génesis 1:1-10",
+        "plantilla": "elegante",
+        "datos": {
+            "v1": "",
+            "v2": "Génesis 1:1-10",
+            "isBible": true,
+            "params": {
+                "ver": "SpanishRVR1960Bible",
+                "lib": "Génesis",
+                "cap": "1",
+                "ran": "1-10"
+            }
+        }
+    },
+    {
+        "label": "Éxodo 20:3-17",
+        "plantilla": "elegante",
+        "datos": {
+            "isBible": true,
+            "params": {
+                "ver": "SpanishRVR1960Bible",
+                "lib": "Éxodo",
+                "cap": "20",
+                "ran": "3-17"
+            }
+        }
+    }
+]

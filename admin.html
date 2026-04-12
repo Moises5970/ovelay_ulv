@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Master Control v5.1</title>
+    <style>
+      :root {
+        --bg: #0d0d0f;
+        --card: #1a1a1e;
+        --accent: #007bff;
+        --success: #00c851;
+        --danger: #ff4444;
+      }
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: #fff;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .sidebar {
+        width: 320px;
+        background: var(--card);
+        border-right: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+      }
+      .preset-card {
+        background: #25252b;
+        margin: 10px;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+      }
+      .active {
+        border-color: var(--success);
+        background: #2a3a2a;
+      }
+      .btn-mini-del {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+      .main {
+        flex: 1;
+        padding: 25px;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .config-box {
+        background: var(--card);
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #333;
+      }
+      input,
+      select {
+        width: 100%;
+        background: #000;
+        border: 1px solid #444;
+        color: #fff;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+      }
+      button {
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        border: none;
+      }
+      .btn-live {
+        grid-column: span 2;
+        padding: 20px;
+        background: var(--accent);
+        color: white;
+        font-size: 1.1rem;
+      }
+      .nav-bible {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .nav-bible button {
+        flex: 1;
+        padding: 12px;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <div style="padding: 20px">
+        <h3>Categoría</h3>
+        <select id="cat" onchange="cambiarCategoria()"></select>
+      </div>
+      <div
+        id="lista-presets"
+        style="flex: 1; overflow-y: auto; padding: 10px"
+      ></div>
+      <button
+        onclick="limpiarPresets()"
+        style="
+          background: var(--danger);
+          color: white;
+          padding: 15px;
+          margin: 10px;
+        "
+      >
+        🧹 LIMPIAR CATEGORÍA
+      </button>
+      <button
+        onclick="apagarCapa()"
+        style="
+          background: #333;
+          color: white;
+          padding: 15px;
+          margin: 0 10px 10px 10px;
+        "
+      >
+        🛑 OFF
+      </button>
+    </div>
+
+    <div class="main">
+      <div class="config-box">
+        <h3>Diseño</h3>
+        <label>Plantilla</label
+        ><select id="pla"></select>
+        <div id="campos-dinamicos"></div>
+      </div>
+
+      <div class="config-box" id="box-bible" style="display: none">
+        <h3>Biblia</h3>
+        <select id="bib-ver" onchange="cargarLibros()"></select>
+        <select id="bib-lib" onchange="cargarCapitulos()"></select>
+        <select id="bib-cap"></select>
+        <input type="text" id="bib-range" placeholder="Rango ej: 1-5" />
+        <div class="nav-bible">
+          <button onclick="navegarVersiculo(-1)">◀ ANTERIOR</button>
+          <button onclick="navegarVersiculo(1)">SIGUIENTE ▶</button>
+        </div>
+        <p
+          id="bib-status"
+          style="
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+          "
+        ></p>
+      </div>
+
+      <button class="btn-live" onclick="lanzarLive()">
+        🚀 LANZAR A PANTALLA
+      </button>
+      <button
+        onclick="guardarPreset()"
+        style="
+          grid-column: span 2;
+          background: #333;
+          color: white;
+          padding: 15px;
+        "
+      >
+        💾 GUARDAR PRESET
+      </button>
+    </div>
+
+    <script>
+      let estructura = {},
+        presetsMemoria = [],
+        bibliaData = [];
+      let versiculosActuales = [],
+        indiceVersiculo = 0;
+
+      async function init() {
+        const res = await fetch("/api/init");
+        estructura = await res.json();
+        const catSelect = document.getElementById("cat");
+        Object.keys(estructura).forEach(
+          (c) =>
+            (catSelect.innerHTML += `<option value="${c}">${c.toUpperCase()}</option>`),
+        );
+        cambiarCategoria();
+        await cargarVersionesReales();
+      }
+
+      function cambiarCategoria() {
+        const cat = document.getElementById("cat").value;
+        const plaSelect = document.getElementById("pla");
+        plaSelect.innerHTML = "";
+        (estructura[cat] || []).forEach(
+          (p) => (plaSelect.innerHTML += `<option value="${p}">${p}</option>`),
+        );
+        document.getElementById("box-bible").style.display =
+          cat === "versiculos" ? "block" : "none";
+
+        const dyn = document.getElementById("campos-dinamicos");
+        if (cat === "creditos") {
+          dyn.innerHTML = `<button onclick="addArea()" style="padding:10px; margin-bottom:10px; width:100%; background:#444; color:white;">+ Bloque</button><div id="area-list"></div>`;
+          addArea();
+        } else {
+          dyn.innerHTML = `<label>Línea 1 (v1)</label><input type="text" id="v1"><label>Línea 2 (v2)</label><input type="text" id="v2">`;
+        }
+        cargarPresetsLateral(cat);
+      }
+
+      async function cargarVersionesReales() {
+        const res = await fetch("/api/bible/list");
+        const versiones = await res.json();
+        const sel = document.getElementById("bib-ver");
+        sel.innerHTML = '<option value="">-- Versión --</option>';
+        versiones.forEach(
+          (v) => (sel.innerHTML += `<option value="${v}">${v}</option>`),
+        );
+      }
+
+      async function cargarLibros(pre = null) {
+        const ver = document.getElementById("bib-ver").value;
+        if (!ver) return;
+        const res = await fetch(`/api/bible/${ver}/metadata`);
+        bibliaData = await res.json();
+        const sel = document.getElementById("bib-lib");
+        sel.innerHTML = '<option value="">-- Libro --</option>';
+        bibliaData.forEach(
+          (l) =>
+            (sel.innerHTML += `<option value="${l.nombre}">${l.nombre}</option>`),
+        );
+        if (pre) {
+          sel.value = pre;
+          await cargarCapitulos();
+        }
+      }
+
+      async function cargarCapitulos(pre = null) {
+        const libroNom = document.getElementById("bib-lib").value;
+        const libro = bibliaData.find((l) => l.nombre === libroNom);
+        const sel = document.getElementById("bib-cap");
+        sel.innerHTML = "";
+        if (libro)
+          for (let i = 1; i <= libro.capitulos; i++)
+            sel.innerHTML += `<option value="${i}">${i}</option>`;
+        if (pre) sel.value = pre;
+      }
+
+      async function lanzarLive() {
+        const cat = document.getElementById("cat").value;
+        let datos = {};
+        if (cat === "versiculos") {
+          const ver = document.getElementById("bib-ver").value,
+            lib = document.getElementById("bib-lib").value,
+            cap = document.getElementById("bib-cap").value,
+            ran = document.getElementById("bib-range").value;
+          const res = await fetch(`/api/bible/${ver}/${lib}/${cap}`);
+          const v_list = await res.json();
+          if (ran.includes("-")) {
+            const [ini, fin] = ran.split("-").map(Number);
+            versiculosActuales = v_list.filter(
+              (v) => Number(v.numero) >= ini && Number(v.numero) <= fin,
+            );
+            indiceVersiculo = 0;
+            actualizarVersiculoEnPantalla();
+          } else {
+            const vU = v_list.find((v) => v.numero === ran);
+            enviarAConfig("versiculos", {
+              v1: vU ? `${vU.numero}. ${vU.texto}` : "",
+              v2: `${lib} ${cap}`,
+            });
+          }
+        } else if (cat === "creditos") {
+          const filas = document.querySelectorAll("#area-list .area-row");
+          enviarAConfig(cat, {
+            lista: Array.from(filas).map((d) => ({
+              area: d.querySelector(".in-a").value,
+              nombres: d
+                .querySelector(".in-n")
+                .value.split(",")
+                .map((n) => n.trim()),
+            })),
+          });
+        } else {
+          enviarAConfig(cat, {
+            v1: document.getElementById("v1").value,
+            v2: document.getElementById("v2").value,
+          });
+        }
+      }
+
+      function actualizarVersiculoEnPantalla() {
+        const v = versiculosActuales[indiceVersiculo];
+        const datos = {
+          v1: `${v.numero}. ${v.texto}`,
+          v2: `${document.getElementById("bib-lib").value} ${document.getElementById("bib-cap").value}`,
+        };
+        document.getElementById("bib-status").innerText =
+          `Viendo: ${indiceVersiculo + 1} de ${versiculosActuales.length}`;
+        enviarAConfig("versiculos", datos);
+      }
+
+      async function navegarVersiculo(dir) {
+        if (versiculosActuales.length === 0) return;
+        indiceVersiculo = Math.max(
+          0,
+          Math.min(versiculosActuales.length - 1, indiceVersiculo + dir),
+        );
+        actualizarVersiculoEnPantalla();
+      }
+
+      async function enviarAConfig(cat, datos) {
+        let config = await (await fetch("config.json?t=" + Date.now()))
+          .json()
+          .catch(() => ({}));
+        config[cat] = {
+          plantilla: document.getElementById("pla").value,
+          datos,
+          update: Date.now(),
+        };
+        await fetch("/api/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
+        });
+      }
+
+      async function cargarPresetsLateral(cat) {
+        const res = await fetch(`/api/presets/${cat}`);
+        presetsMemoria = await res.json();
+        const lista = document.getElementById("lista-presets");
+        lista.innerHTML = "";
+        presetsMemoria.forEach((p, i) => {
+          const div = document.createElement("div");
+          div.className = "preset-card";
+          div.innerHTML = `<strong>${p.label}</strong><br><small>${p.plantilla}</small><button class="btn-mini-del" onclick="borrarPreset(${i}, event)">🗑</button>`;
+          div.onclick = async () => {
+            document
+              .querySelectorAll(".preset-card")
+              .forEach((c) => c.classList.remove("active"));
+            div.classList.add("active");
+            document.getElementById("pla").value = p.plantilla;
+            if (p.datos.isBible) {
+              document.getElementById("bib-ver").value = p.datos.params.ver;
+              await cargarLibros(p.datos.params.lib);
+              await cargarCapitulos(p.datos.params.cap);
+              document.getElementById("bib-range").value = p.datos.params.ran;
+            } else if (p.datos.lista) {
+              document.getElementById("area-list").innerHTML = "";
+              p.datos.lista.forEach((item) =>
+                addArea(item.area, item.nombres.join(", ")),
+              );
+            } else {
+              if (document.getElementById("v1"))
+                document.getElementById("v1").value = p.datos.v1 || "";
+              if (document.getElementById("v2"))
+                document.getElementById("v2").value = p.datos.v2 || "";
+            }
+          };
+          lista.appendChild(div);
+        });
+      }
+
+      async function guardarPreset() {
+        const cat = document.getElementById("cat").value;
+        let datos = {},
+          label = "";
+        if (cat === "versiculos") {
+          const lib = document.getElementById("bib-lib").value,
+            cap = document.getElementById("bib-cap").value,
+            ran = document.getElementById("bib-range").value;
+          label = `${lib} ${cap}:${ran}`;
+          datos = {
+            isBible: true,
+            params: {
+              ver: document.getElementById("bib-ver").value,
+              lib,
+              cap,
+              ran,
+            },
+          };
+        } else if (cat === "creditos") {
+          const filas = document.querySelectorAll("#area-list .area-row");
+          datos = {
+            lista: Array.from(filas).map((d) => ({
+              area: d.querySelector(".in-a").value,
+              nombres: d
+                .querySelector(".in-n")
+                .value.split(",")
+                .map((n) => n.trim()),
+            })),
+          };
+          label = `Créditos: ${datos.lista[0]?.area || "Producción"}`;
+        } else {
+          datos = {
+            v1: document.getElementById("v1").value,
+            v2: document.getElementById("v2").value,
+          };
+          label = datos.v1 || "Sin nombre";
+        }
+        presetsMemoria.push({
+          label,
+          plantilla: document.getElementById("pla").value,
+          datos,
+        });
+        await fetch(`/api/presets/${cat}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(presetsMemoria),
+        });
+        cargarPresetsLateral(cat);
+      }
+
+      async function borrarPreset(i, e) {
+        e.stopPropagation();
+        if (!confirm("¿Eliminar preset?")) return;
+        const cat = document.getElementById("cat").value;
+        presetsMemoria.splice(i, 1);
+        await fetch(`/api/presets/${cat}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(presetsMemoria),
+        });
+        cargarPresetsLateral(cat);
+      }
+
+      async function limpiarPresets() {
+        if (!confirm("¿BORRAR TODO?")) return;
+        const cat = document.getElementById("cat").value;
+        await fetch(`/api/presets/${cat}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify([]),
+        });
+        cargarPresetsLateral(cat);
+      }
+
+      function addArea(a = "", n = "") {
+        const div = document.createElement("div");
+        div.className = "area-row";
+        div.style =
+          "background:#111; padding:10px; margin-top:5px; border-radius:6px; display:flex; gap:5px;";
+        div.innerHTML = `<input type="text" class="in-a" placeholder="Área" value="${a}" style="margin:0;"><input type="text" class="in-n" placeholder="Nombres" value="${n}" style="margin:0;">`;
+        document.getElementById("area-list").appendChild(div);
+      }
+
+      async function apagarCapa() {
+        const cat = document.getElementById("cat").value;
+        let config = await (await fetch("config.json"))
+          .json()
+          .catch(() => ({}));
+        delete config[cat];
+        await fetch("/api/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
+        });
+      }
+
+      init();
+    </script>
+  </body>
+</html>
