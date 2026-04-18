@@ -79,7 +79,6 @@ const bookNames = [
   "Apocalipsis",
 ];
 
-// --- BIBLIA ---
 app.get("/api/bible/list", (req, res) => {
   const dir = path.join(__dirname, "bible_versions");
   res.json(
@@ -97,20 +96,27 @@ app.get("/api/bible/:version/metadata", async (req, res) => {
     const xml = fs.readFileSync(
       path.join(__dirname, "bible_versions", `${req.params.version}.xml`),
     );
-    const result = await new xml2js.Parser().parseStringPromise(xml);
-    const bible = result.bible;
+    const result = await new xml2js.Parser({
+      explicitArray: false,
+      mergeAttrs: true,
+    }).parseStringPromise(xml);
+    const bible = result.bible || result.BIBLE;
     let books = [];
-    bible.testament.forEach((t) => {
-      if (t.book) books = books.concat(t.book);
+    const testaments = Array.isArray(bible.testament)
+      ? bible.testament
+      : [bible.testament];
+    testaments.forEach((t) => {
+      if (t.book)
+        books = books.concat(Array.isArray(t.book) ? t.book : [t.book]);
     });
     res.json(
       books.map((b, i) => ({
-        nombre: bookNames[i] || b.$.name,
-        capitulos: b.chapter.length,
+        nombre: bookNames[i] || b.name,
+        capitulos: Array.isArray(b.chapter) ? b.chapter.length : 1,
       })),
     );
   } catch (e) {
-    res.status(500).send("Error en XML");
+    res.status(500).send("Error");
   }
 });
 
@@ -119,25 +125,35 @@ app.get("/api/bible/:version/:book/:chapter", async (req, res) => {
     const xml = fs.readFileSync(
       path.join(__dirname, "bible_versions", `${req.params.version}.xml`),
     );
-    const result = await new xml2js.Parser().parseStringPromise(xml);
-    const bible = result.bible;
+    const result = await new xml2js.Parser({
+      explicitArray: false,
+      mergeAttrs: true,
+    }).parseStringPromise(xml);
+    const bible = result.bible || result.BIBLE;
     let books = [];
-    bible.testament.forEach((t) => {
-      if (t.book) books = books.concat(t.book);
+    const testaments = Array.isArray(bible.testament)
+      ? bible.testament
+      : [bible.testament];
+    testaments.forEach((t) => {
+      if (t.book)
+        books = books.concat(Array.isArray(t.book) ? t.book : [t.book]);
     });
     const bIdx = bookNames.findIndex(
       (n) => n.toLowerCase() === req.params.book.toLowerCase(),
     );
-    const cap = books[bIdx].chapter.find(
-      (c) => c.$.number === req.params.chapter,
+    const chapters = Array.isArray(books[bIdx].chapter)
+      ? books[bIdx].chapter
+      : [books[bIdx].chapter];
+    const cap = chapters.find((c) => c.number === req.params.chapter);
+    const verses = Array.isArray(cap.verse) ? cap.verse : [cap.verse];
+    res.json(
+      verses.map((v) => ({ numero: v.number, texto: v._ || v.toString() })),
     );
-    res.json(cap.verse.map((v) => ({ numero: v.$.number, texto: v._ })));
   } catch (e) {
     res.status(500).send("Error");
   }
 });
 
-// --- CORE ---
 app.get("/api/init", (req, res) => {
   const ignore = [
     "presets_db",
@@ -180,4 +196,4 @@ app.post("/api/update", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.listen(3000, () => console.log("🚀 Servidor en puerto 3000"));
+app.listen(3000, () => console.log("🚀 Motor v6.8 Activo en puerto 3000"));

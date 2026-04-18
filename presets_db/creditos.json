@@ -34,5 +34,45 @@
                 }
             ]
         }
+    },
+    {
+        "label": "CRÉDITOS: Manager",
+        "plantilla": "creditos1",
+        "datos": {
+            "lista": [
+                {
+                    "area": "Manager",
+                    "nombres": [
+                        "Raul Eli"
+                    ]
+                },
+                {
+                    "area": "Switcher",
+                    "nombres": [
+                        "Kayla Percian"
+                    ]
+                },
+                {
+                    "area": "Streaming",
+                    "nombres": [
+                        "Erick Magdiel"
+                    ]
+                },
+                {
+                    "area": "VTR",
+                    "nombres": [
+                        "Andres Pérez"
+                    ]
+                },
+                {
+                    "area": "Cámaras",
+                    "nombres": [
+                        "Katia Algo",
+                        "Nimsi Algo",
+                        "Moisés Martínez"
+                    ]
+                }
+            ]
+        }
     }
 ]

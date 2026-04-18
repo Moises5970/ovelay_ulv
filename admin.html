@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Master Control v5.1</title>
+    <title>Master Control v6.8</title>
     <style>
       :root {
         --bg: #0d0d0f;
@@ -35,12 +35,13 @@
         cursor: pointer;
         border: 2px solid transparent;
         position: relative;
+        transition: 0.2s;
       }
-      .active {
+      .preset-card.active {
         border-color: var(--success);
         background: #2a3a2a;
       }
-      .btn-mini-del {
+      .btn-del {
         position: absolute;
         top: 10px;
         right: 10px;
@@ -83,29 +84,22 @@
       }
       .btn-live {
         grid-column: span 2;
-        padding: 20px;
+        padding: 25px;
         background: var(--accent);
         color: white;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
       }
-      .nav-bible {
-        display: flex;
-        gap: 10px;
-        margin-top: 10px;
-      }
-      .nav-bible button {
-        flex: 1;
-        padding: 12px;
-        background: #333;
-        color: white;
-        border: 1px solid #555;
+      .btn-live:active {
+        transform: scale(0.98);
+        background: #0056b3;
       }
     </style>
   </head>
   <body>
     <div class="sidebar">
       <div style="padding: 20px">
-        <h3>Categoría</h3>
+        <h3>CATEGORÍA</h3>
         <select id="cat" onchange="cambiarCategoria()"></select>
       </div>
       <div
@@ -121,7 +115,7 @@
           margin: 10px;
         "
       >
-        🧹 LIMPIAR CATEGORÍA
+        🧹 LIMPIAR TODO
       </button>
       <button
         onclick="apagarCapa()"
@@ -132,16 +126,19 @@
           margin: 0 10px 10px 10px;
         "
       >
-        🛑 OFF
+        🛑 QUITAR CAPA (OFF)
       </button>
     </div>
 
     <div class="main">
       <div class="config-box">
-        <h3>Diseño</h3>
+        <h3>Diseño y Datos</h3>
         <label>Plantilla</label
         ><select id="pla"></select>
-        <div id="campos-dinamicos"></div>
+        <div id="campos-dinamicos">
+          <label>Línea 1 (v1)</label><input type="text" id="v1" />
+          <label>Línea 2 (v2)</label><input type="text" id="v2" />
+        </div>
       </div>
 
       <div class="config-box" id="box-bible" style="display: none">
@@ -149,20 +146,21 @@
         <select id="bib-ver" onchange="cargarLibros()"></select>
         <select id="bib-lib" onchange="cargarCapitulos()"></select>
         <select id="bib-cap"></select>
-        <input type="text" id="bib-range" placeholder="Rango ej: 1-5" />
-        <div class="nav-bible">
-          <button onclick="navegarVersiculo(-1)">◀ ANTERIOR</button>
-          <button onclick="navegarVersiculo(1)">SIGUIENTE ▶</button>
+        <input type="text" id="bib-range" placeholder="Versículo(s) ej: 1-5" />
+        <div style="display: flex; gap: 10px">
+          <button
+            onclick="navegarVersiculo(-1)"
+            style="flex: 1; background: #444; color: white; padding: 12px"
+          >
+            ◀ Ant.
+          </button>
+          <button
+            onclick="navegarVersiculo(1)"
+            style="flex: 1; background: #444; color: white; padding: 12px"
+          >
+            Sig. ▶
+          </button>
         </div>
-        <p
-          id="bib-status"
-          style="
-            font-size: 0.8rem;
-            color: #888;
-            margin-top: 10px;
-            text-align: center;
-          "
-        ></p>
       </div>
 
       <button class="btn-live" onclick="lanzarLive()">
@@ -184,8 +182,8 @@
     <script>
       let estructura = {},
         presetsMemoria = [],
-        bibliaData = [];
-      let versiculosActuales = [],
+        bibliaData = [],
+        versiculosActuales = [],
         indiceVersiculo = 0;
 
       async function init() {
@@ -202,13 +200,13 @@
 
       function cambiarCategoria() {
         const cat = document.getElementById("cat").value;
+        document.getElementById("box-bible").style.display =
+          cat === "versiculos" ? "block" : "none";
         const plaSelect = document.getElementById("pla");
         plaSelect.innerHTML = "";
         (estructura[cat] || []).forEach(
           (p) => (plaSelect.innerHTML += `<option value="${p}">${p}</option>`),
         );
-        document.getElementById("box-bible").style.display =
-          cat === "versiculos" ? "block" : "none";
 
         const dyn = document.getElementById("campos-dinamicos");
         if (cat === "creditos") {
@@ -220,54 +218,16 @@
         cargarPresetsLateral(cat);
       }
 
-      async function cargarVersionesReales() {
-        const res = await fetch("/api/bible/list");
-        const versiones = await res.json();
-        const sel = document.getElementById("bib-ver");
-        sel.innerHTML = '<option value="">-- Versión --</option>';
-        versiones.forEach(
-          (v) => (sel.innerHTML += `<option value="${v}">${v}</option>`),
-        );
-      }
-
-      async function cargarLibros(pre = null) {
-        const ver = document.getElementById("bib-ver").value;
-        if (!ver) return;
-        const res = await fetch(`/api/bible/${ver}/metadata`);
-        bibliaData = await res.json();
-        const sel = document.getElementById("bib-lib");
-        sel.innerHTML = '<option value="">-- Libro --</option>';
-        bibliaData.forEach(
-          (l) =>
-            (sel.innerHTML += `<option value="${l.nombre}">${l.nombre}</option>`),
-        );
-        if (pre) {
-          sel.value = pre;
-          await cargarCapitulos();
-        }
-      }
-
-      async function cargarCapitulos(pre = null) {
-        const libroNom = document.getElementById("bib-lib").value;
-        const libro = bibliaData.find((l) => l.nombre === libroNom);
-        const sel = document.getElementById("bib-cap");
-        sel.innerHTML = "";
-        if (libro)
-          for (let i = 1; i <= libro.capitulos; i++)
-            sel.innerHTML += `<option value="${i}">${i}</option>`;
-        if (pre) sel.value = pre;
-      }
-
       async function lanzarLive() {
         const cat = document.getElementById("cat").value;
-        let datos = {};
         if (cat === "versiculos") {
           const ver = document.getElementById("bib-ver").value,
             lib = document.getElementById("bib-lib").value,
             cap = document.getElementById("bib-cap").value,
             ran = document.getElementById("bib-range").value;
-          const res = await fetch(`/api/bible/${ver}/${lib}/${cap}`);
-          const v_list = await res.json();
+          const v_list = await (
+            await fetch(`/api/bible/${ver}/${lib}/${cap}`)
+          ).json();
           if (ran.includes("-")) {
             const [ini, fin] = ran.split("-").map(Number);
             versiculosActuales = v_list.filter(
@@ -277,7 +237,7 @@
             actualizarVersiculoEnPantalla();
           } else {
             const vU = v_list.find((v) => v.numero === ran);
-            enviarAConfig("versiculos", {
+            enviarAConfig(cat, {
               v1: vU ? `${vU.numero}. ${vU.texto}` : "",
               v2: `${lib} ${cap}`,
             });
@@ -303,28 +263,17 @@
 
       function actualizarVersiculoEnPantalla() {
         const v = versiculosActuales[indiceVersiculo];
-        const datos = {
+        enviarAConfig("versiculos", {
           v1: `${v.numero}. ${v.texto}`,
           v2: `${document.getElementById("bib-lib").value} ${document.getElementById("bib-cap").value}`,
-        };
-        document.getElementById("bib-status").innerText =
-          `Viendo: ${indiceVersiculo + 1} de ${versiculosActuales.length}`;
-        enviarAConfig("versiculos", datos);
-      }
-
-      async function navegarVersiculo(dir) {
-        if (versiculosActuales.length === 0) return;
-        indiceVersiculo = Math.max(
-          0,
-          Math.min(versiculosActuales.length - 1, indiceVersiculo + dir),
-        );
-        actualizarVersiculoEnPantalla();
+        });
       }
 
       async function enviarAConfig(cat, datos) {
         let config = await (await fetch("config.json?t=" + Date.now()))
           .json()
           .catch(() => ({}));
+        // CLAVE: update: Date.now() genera un ID distinto siempre para que OBS reaccione
         config[cat] = {
           plantilla: document.getElementById("pla").value,
           datos,
@@ -345,7 +294,7 @@
         presetsMemoria.forEach((p, i) => {
           const div = document.createElement("div");
           div.className = "preset-card";
-          div.innerHTML = `<strong>${p.label}</strong><br><small>${p.plantilla}</small><button class="btn-mini-del" onclick="borrarPreset(${i}, event)">🗑</button>`;
+          div.innerHTML = `<strong>${p.label}</strong><br><small>${p.plantilla}</small><button class="btn-del" onclick="borrarPreset(${i}, event)">🗑</button>`;
           div.onclick = async () => {
             document
               .querySelectorAll(".preset-card")
@@ -376,19 +325,16 @@
       async function guardarPreset() {
         const cat = document.getElementById("cat").value;
         let datos = {},
-          label = "";
+          label = document.getElementById("v1")?.value || "Preset";
         if (cat === "versiculos") {
-          const lib = document.getElementById("bib-lib").value,
-            cap = document.getElementById("bib-cap").value,
-            ran = document.getElementById("bib-range").value;
-          label = `${lib} ${cap}:${ran}`;
+          label = `${document.getElementById("bib-lib").value} ${document.getElementById("bib-cap").value}:${document.getElementById("bib-range").value}`;
           datos = {
             isBible: true,
             params: {
               ver: document.getElementById("bib-ver").value,
-              lib,
-              cap,
-              ran,
+              lib: document.getElementById("bib-lib").value,
+              cap: document.getElementById("bib-cap").value,
+              ran: document.getElementById("bib-range").value,
             },
           };
         } else if (cat === "creditos") {
@@ -402,13 +348,12 @@
                 .map((n) => n.trim()),
             })),
           };
-          label = `Créditos: ${datos.lista[0]?.area || "Producción"}`;
+          label = `CRÉDITOS: ${datos.lista[0]?.area || "Producción"}`;
         } else {
           datos = {
             v1: document.getElementById("v1").value,
             v2: document.getElementById("v2").value,
           };
-          label = datos.v1 || "Sin nombre";
         }
         presetsMemoria.push({
           label,
@@ -425,7 +370,7 @@
 
       async function borrarPreset(i, e) {
         e.stopPropagation();
-        if (!confirm("¿Eliminar preset?")) return;
+        if (!confirm("¿Eliminar?")) return;
         const cat = document.getElementById("cat").value;
         presetsMemoria.splice(i, 1);
         await fetch(`/api/presets/${cat}`, {
@@ -447,6 +392,43 @@
         cargarPresetsLateral(cat);
       }
 
+      async function cargarVersionesReales() {
+        const res = await fetch("/api/bible/list");
+        const versiones = await res.json();
+        const sel = document.getElementById("bib-ver");
+        sel.innerHTML = '<option value="">-- Versión --</option>';
+        versiones.forEach(
+          (v) => (sel.innerHTML += `<option value="${v}">${v}</option>`),
+        );
+      }
+
+      async function cargarLibros(pre = null) {
+        const ver = document.getElementById("bib-ver").value;
+        if (!ver) return;
+        bibliaData = await (await fetch(`/api/bible/${ver}/metadata`)).json();
+        const sel = document.getElementById("bib-lib");
+        sel.innerHTML = '<option value="">-- Libro --</option>';
+        bibliaData.forEach(
+          (l) =>
+            (sel.innerHTML += `<option value="${l.nombre}">${l.nombre}</option>`),
+        );
+        if (pre) {
+          sel.value = pre;
+          await cargarCapitulos();
+        }
+      }
+
+      async function cargarCapitulos(pre = null) {
+        const libroNom = document.getElementById("bib-lib").value;
+        const libro = bibliaData.find((l) => l.nombre === libroNom);
+        const sel = document.getElementById("bib-cap");
+        sel.innerHTML = "";
+        if (libro)
+          for (let i = 1; i <= libro.capitulos; i++)
+            sel.innerHTML += `<option value="${i}">${i}</option>`;
+        if (pre) sel.value = pre;
+      }
+
       function addArea(a = "", n = "") {
         const div = document.createElement("div");
         div.className = "area-row";
@@ -457,16 +439,24 @@
       }
 
       async function apagarCapa() {
-        const cat = document.getElementById("cat").value;
         let config = await (await fetch("config.json"))
           .json()
           .catch(() => ({}));
-        delete config[cat];
+        delete config[document.getElementById("cat").value];
         await fetch("/api/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(config),
         });
+      }
+
+      async function navegarVersiculo(dir) {
+        if (versiculosActuales.length === 0) return;
+        indiceVersiculo = Math.max(
+          0,
+          Math.min(versiculosActuales.length - 1, indiceVersiculo + dir),
+        );
+        actualizarVersiculoEnPantalla();
       }
 
       init();
