@@ -2,249 +2,755 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Master Control v6.8</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overlay Control</title>
     <style>
       :root {
-        --bg: #0d0d0f;
-        --card: #1a1a1e;
-        --accent: #007bff;
-        --success: #00c851;
-        --danger: #ff4444;
+        --bg: #0e0e11;
+        --surface: #17171c;
+        --s2: #1f1f27;
+        --s3: #28282f;
+        --border: rgba(255, 255, 255, 0.07);
+        --border2: rgba(255, 255, 255, 0.13);
+        --text: #e8e8f0;
+        --muted: #888896;
+        --accent: #5b6af0;
+        --accent-h: #6e7dff;
+        --success: #2ecf7c;
+        --danger: #f04e4e;
+        --warn: #f0a544;
+        --r: 10px;
+        --rlg: 16px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
       body {
-        font-family: "Segoe UI", sans-serif;
+        font-family: "Segoe UI", system-ui, sans-serif;
         background: var(--bg);
-        color: #fff;
-        margin: 0;
-        display: flex;
+        color: var(--text);
         height: 100vh;
         overflow: hidden;
+        display: flex;
+        font-size: 14px;
       }
+
+      /* ── SIDEBAR ── */
       .sidebar {
-        width: 320px;
-        background: var(--card);
-        border-right: 1px solid #333;
+        width: 280px;
+        flex-shrink: 0;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
         display: flex;
         flex-direction: column;
+        height: 100vh;
+      }
+      .sidebar-head {
+        padding: 18px 14px 12px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .sidebar-head-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 10px;
+      }
+
+      /* Chips de categoría */
+      .chip-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip {
+        background: var(--s2);
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        border-radius: 20px;
+        padding: 5px 13px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          color 0.15s,
+          border-color 0.15s;
+        white-space: nowrap;
+        user-select: none;
+      }
+      .chip:hover {
+        background: var(--s3);
+        color: var(--text);
+      }
+      .chip.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      /* Lista de presets */
+      .preset-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 8px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border2) transparent;
+      }
+      .preset-list::-webkit-scrollbar {
+        width: 4px;
+      }
+      .preset-list::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 4px;
+      }
+      .preset-empty {
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        padding: 28px 16px;
       }
       .preset-card {
-        background: #25252b;
-        margin: 10px;
-        padding: 15px;
-        border-radius: 8px;
+        background: var(--s2);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 10px 12px;
+        margin-bottom: 5px;
         cursor: pointer;
-        border: 2px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
         position: relative;
-        transition: 0.2s;
+        overflow: hidden;
+      }
+      .preset-card:hover {
+        background: var(--s3);
+        border-color: var(--border2);
       }
       .preset-card.active {
         border-color: var(--success);
-        background: #2a3a2a;
+        background: rgba(46, 207, 124, 0.06);
       }
-      .btn-del {
+      .preset-card.active::before {
+        content: "";
         position: absolute;
-        top: 10px;
-        right: 10px;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--success);
+        border-radius: 3px 0 0 3px;
+      }
+      .preset-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .preset-label {
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .preset-sub {
+        font-size: 10px;
+        color: var(--muted);
+        margin-top: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .btn-icon {
         background: none;
         border: none;
-        color: var(--danger);
+        color: var(--muted);
         cursor: pointer;
-        font-size: 1.2rem;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        flex-shrink: 0;
+        font-size: 13px;
+        transition:
+          color 0.15s,
+          background 0.15s;
       }
+      .btn-icon:hover {
+        color: var(--danger);
+        background: rgba(240, 78, 78, 0.1);
+      }
+
+      /* Footer sidebar */
+      .sidebar-foot {
+        padding: 8px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+
+      /* ── MAIN ── */
       .main {
         flex: 1;
-        padding: 25px;
+        height: 100vh;
         overflow-y: auto;
+        padding: 20px 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border2) transparent;
+      }
+      .main::-webkit-scrollbar {
+        width: 4px;
+      }
+      .main::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 4px;
+      }
+
+      .section {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--rlg);
+        padding: 18px;
+      }
+      .section-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+
+      /* Chips de plantilla */
+      .pla-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 2px;
+      }
+
+      /* Inputs */
+      label {
+        display: block;
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      input[type="text"],
+      select.field {
+        width: 100%;
+        background: var(--s2);
+        border: 1px solid var(--border2);
+        color: var(--text);
+        padding: 9px 12px;
+        border-radius: var(--r);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.15s;
+        margin-bottom: 12px;
+        appearance: none;
+      }
+      input[type="text"]:focus,
+      select.field:focus {
+        border-color: var(--accent);
+      }
+      input::placeholder {
+        color: var(--muted);
+      }
+
+      /* Botones */
+      .btn {
+        width: 100%;
+        padding: 10px 14px;
+        border: none;
+        border-radius: var(--r);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          opacity 0.15s,
+          transform 0.1s;
+        text-align: center;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+        font-size: 14px;
+        padding: 13px;
+      }
+      .btn-primary:hover {
+        background: var(--accent-h);
+      }
+      .btn-secondary {
+        background: var(--s2);
+        color: var(--text);
+        border: 1px solid var(--border2);
+      }
+      .btn-secondary:hover {
+        background: var(--s3);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--danger);
+        border: 1px solid rgba(240, 78, 78, 0.25);
+      }
+      .btn-danger:hover {
+        background: rgba(240, 78, 78, 0.08);
+      }
+      .btn-off {
+        background: transparent;
+        color: var(--warn);
+        border: 1px solid rgba(240, 165, 68, 0.25);
+      }
+      .btn-off:hover {
+        background: rgba(240, 165, 68, 0.08);
+      }
+
+      /* Nav versículos */
+      .nav-vers {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 20px;
+        gap: 8px;
+        margin-top: 6px;
       }
-      .config-box {
-        background: var(--card);
-        padding: 20px;
-        border-radius: 12px;
-        border: 1px solid #333;
+
+      /* Créditos */
+      .area-row {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 6px;
+        align-items: center;
       }
-      input,
-      select {
-        width: 100%;
-        background: #000;
-        border: 1px solid #444;
-        color: #fff;
-        padding: 12px;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        box-sizing: border-box;
+      .area-row input {
+        margin-bottom: 0;
+        flex: 1;
       }
-      button {
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        border: none;
+
+      /* Badge EN VIVO */
+      .live-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        color: var(--success);
+        background: rgba(46, 207, 124, 0.1);
+        border: 1px solid rgba(46, 207, 124, 0.22);
+        border-radius: 20px;
+        padding: 3px 10px;
       }
-      .btn-live {
-        grid-column: span 2;
-        padding: 25px;
-        background: var(--accent);
-        color: white;
-        font-size: 1.2rem;
-        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+      .dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--success);
+        animation: blink 1.4s infinite;
       }
-      .btn-live:active {
-        transform: scale(0.98);
-        background: #0056b3;
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      /* ── TOAST ── */
+      #toasts {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      .toast {
+        background: var(--s3);
+        border: 1px solid var(--border2);
+        border-radius: var(--r);
+        padding: 10px 15px;
+        font-size: 12px;
+        color: var(--text);
+        pointer-events: all;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transform: translateX(115%);
+        transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        max-width: 300px;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+      }
+      .toast.show {
+        transform: translateX(0);
+      }
+      .toast.ok .ti {
+        color: var(--success);
+      }
+      .toast.err .ti {
+        color: var(--danger);
+      }
+      .toast.inf .ti {
+        color: var(--accent);
+      }
+      .ti {
+        font-size: 15px;
+        flex-shrink: 0;
+      }
+
+      /* ── MODAL (solo para acciones destructivas) ── */
+      #modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 8888;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      #modal.on {
+        display: flex;
+      }
+      .modal-box {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: var(--rlg);
+        padding: 26px;
+        max-width: 320px;
+        width: 90%;
+        box-shadow: 0 20px 55px rgba(0, 0, 0, 0.6);
+      }
+      .modal-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .modal-desc {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 20px;
+        line-height: 1.6;
+      }
+      .modal-acts {
+        display: flex;
+        gap: 7px;
+        justify-content: flex-end;
+      }
+      .modal-acts .btn {
+        width: auto;
+        padding: 8px 16px;
       }
     </style>
   </head>
   <body>
+    <!-- ═══════ SIDEBAR ═══════ -->
     <div class="sidebar">
-      <div style="padding: 20px">
-        <h3>CATEGORÍA</h3>
-        <select id="cat" onchange="cambiarCategoria()"></select>
+      <div class="sidebar-head">
+        <div class="sidebar-head-label">Categoría</div>
+        <div id="cat-chips" class="chip-group"></div>
       </div>
+
+      <div id="lista-presets" class="preset-list">
+        <p class="preset-empty">Sin presets guardados</p>
+      </div>
+
+      <div class="sidebar-foot">
+        <button class="btn btn-off" onclick="apagarCapa()">
+          ⏹ Quitar capa (OFF)
+        </button>
+        <button
+          class="btn btn-danger"
+          onclick="
+            confirmar(
+              '¿Borrar todos los presets de esta categoría? Esta acción no se puede deshacer.',
+              limpiarPresets,
+            )
+          "
+        >
+          🗑 Limpiar todos los presets
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════ MAIN ═══════ -->
+    <div class="main">
+      <!-- Header -->
       <div
-        id="lista-presets"
-        style="flex: 1; overflow-y: auto; padding: 10px"
-      ></div>
-      <button
-        onclick="limpiarPresets()"
         style="
-          background: var(--danger);
-          color: white;
-          padding: 15px;
-          margin: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
         "
       >
-        🧹 LIMPIAR TODO
+        <div>
+          <div style="font-size: 19px; font-weight: 700">Overlay Control</div>
+          <div style="font-size: 11px; color: var(--muted); margin-top: 2px">
+            Sistema de capas para streaming
+          </div>
+        </div>
+        <div id="badge-cont"></div>
+      </div>
+
+      <!-- Plantilla (chips) -->
+      <div class="section">
+        <div class="section-title">Plantilla</div>
+        <div id="pla-chips" class="pla-chips"></div>
+        <!-- Valor oculto para compatibilidad con el resto del código -->
+        <input type="hidden" id="pla" />
+      </div>
+
+      <!-- Datos -->
+      <div class="section">
+        <div class="section-title">Datos</div>
+        <div id="campos-dinamicos">
+          <label>Línea principal (v1)</label>
+          <input type="text" id="v1" placeholder="Ej: Juan Pérez" />
+          <label>Línea secundaria (v2)</label>
+          <input type="text" id="v2" placeholder="Ej: Director de Adoración" />
+        </div>
+      </div>
+
+      <!-- Biblia -->
+      <div class="section" id="box-bible" style="display: none">
+        <div class="section-title">Pasaje bíblico</div>
+        <label>Versión</label>
+        <select id="bib-ver" class="field" onchange="cargarLibros()"></select>
+        <label>Libro</label>
+        <select
+          id="bib-lib"
+          class="field"
+          onchange="cargarCapitulos()"
+        ></select>
+        <label>Capítulo</label>
+        <select id="bib-cap" class="field"></select>
+        <label>Versículo(s) — ej: 3 o 1-5</label>
+        <input type="text" id="bib-range" placeholder="1" />
+        <div class="nav-vers">
+          <button class="btn btn-secondary" onclick="navegarVersiculo(-1)">
+            ◀ Anterior
+          </button>
+          <button class="btn btn-secondary" onclick="navegarVersiculo(1)">
+            Siguiente ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <button class="btn btn-primary" onclick="lanzarLive()">
+        🚀 Lanzar a pantalla
       </button>
-      <button
-        onclick="apagarCapa()"
-        style="
-          background: #333;
-          color: white;
-          padding: 15px;
-          margin: 0 10px 10px 10px;
-        "
-      >
-        🛑 QUITAR CAPA (OFF)
+      <button class="btn btn-secondary" onclick="guardarPreset()">
+        💾 Guardar como preset
       </button>
     </div>
 
-    <div class="main">
-      <div class="config-box">
-        <h3>Diseño y Datos</h3>
-        <label>Plantilla</label
-        ><select id="pla"></select>
-        <div id="campos-dinamicos">
-          <label>Línea 1 (v1)</label><input type="text" id="v1" />
-          <label>Línea 2 (v2)</label><input type="text" id="v2" />
+    <!-- Toast container -->
+    <div id="toasts"></div>
+
+    <!-- Modal (solo acciones destructivas) -->
+    <div id="modal">
+      <div class="modal-box">
+        <div class="modal-title">¿Confirmar?</div>
+        <div class="modal-desc" id="modal-desc"></div>
+        <div class="modal-acts">
+          <button class="btn btn-secondary" onclick="cerrarModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-danger" id="modal-ok">Confirmar</button>
         </div>
       </div>
-
-      <div class="config-box" id="box-bible" style="display: none">
-        <h3>Biblia</h3>
-        <select id="bib-ver" onchange="cargarLibros()"></select>
-        <select id="bib-lib" onchange="cargarCapitulos()"></select>
-        <select id="bib-cap"></select>
-        <input type="text" id="bib-range" placeholder="Versículo(s) ej: 1-5" />
-        <div style="display: flex; gap: 10px">
-          <button
-            onclick="navegarVersiculo(-1)"
-            style="flex: 1; background: #444; color: white; padding: 12px"
-          >
-            ◀ Ant.
-          </button>
-          <button
-            onclick="navegarVersiculo(1)"
-            style="flex: 1; background: #444; color: white; padding: 12px"
-          >
-            Sig. ▶
-          </button>
-        </div>
-      </div>
-
-      <button class="btn-live" onclick="lanzarLive()">
-        🚀 LANZAR A PANTALLA
-      </button>
-      <button
-        onclick="guardarPreset()"
-        style="
-          grid-column: span 2;
-          background: #333;
-          color: white;
-          padding: 15px;
-        "
-      >
-        💾 GUARDAR PRESET
-      </button>
     </div>
 
     <script>
+      /* ── Estado ── */
       let estructura = {},
         presetsMemoria = [],
-        bibliaData = [],
-        versiculosActuales = [],
+        bibliaData = [];
+      let versiculosActuales = [],
         indiceVersiculo = 0;
+      let catActual = "";
+      let presetActivo = null;
+      let modoEdicion = false;
 
+      /* ── Toast ── */
+      function toast(msg, tipo = "ok") {
+        const icons = { ok: "✓", err: "✕", inf: "ℹ" };
+        const el = document.createElement("div");
+        el.className = `toast ${tipo}`;
+        el.innerHTML = `<span class="ti">${icons[tipo]}</span><span>${msg}</span>`;
+        document.getElementById("toasts").appendChild(el);
+        requestAnimationFrame(() => el.classList.add("show"));
+        setTimeout(() => {
+          el.classList.remove("show");
+          setTimeout(() => el.remove(), 350);
+        }, 2800);
+      }
+
+      /* ── Modal (solo para acciones destructivas) ── */
+      function confirmar(texto, cb) {
+        document.getElementById("modal-desc").textContent = texto;
+        document.getElementById("modal").classList.add("on");
+        document.getElementById("modal-ok").onclick = () => {
+          cerrarModal();
+          cb();
+        };
+      }
+      function cerrarModal() {
+        document.getElementById("modal").classList.remove("on");
+      }
+      document.getElementById("modal").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) cerrarModal();
+      });
+
+      /* ── Badge en vivo ── */
+      function badge(label) {
+        const c = document.getElementById("badge-cont");
+        c.innerHTML = label
+          ? `<div class="live-badge"><div class="dot"></div>EN VIVO · ${label}</div>`
+          : `<div style="font-size:11px;color:var(--muted)">Sin capa activa</div>`;
+      }
+
+      /* ── Init ── */
       async function init() {
         const res = await fetch("/api/init");
         estructura = await res.json();
-        const catSelect = document.getElementById("cat");
-        Object.keys(estructura).forEach(
-          (c) =>
-            (catSelect.innerHTML += `<option value="${c}">${c.toUpperCase()}</option>`),
-        );
-        cambiarCategoria();
+
+        const cont = document.getElementById("cat-chips");
+        Object.keys(estructura).forEach((c, i) => {
+          const btn = document.createElement("button");
+          btn.className = "chip" + (i === 0 ? " active" : "");
+          btn.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+          btn.dataset.cat = c;
+          btn.onclick = () => seleccionarCat(c, btn);
+          cont.appendChild(btn);
+        });
+
+        catActual = Object.keys(estructura)[0] || "";
+        if (catActual) cambiarCategoria(catActual);
         await cargarVersionesReales();
+        badge(null);
       }
 
-      function cambiarCategoria() {
-        const cat = document.getElementById("cat").value;
+      /* ── Selección de categoría (chips) ── */
+      function seleccionarCat(cat, btn) {
+        document
+          .querySelectorAll("#cat-chips .chip")
+          .forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        catActual = cat;
+        cambiarCategoria(cat);
+      }
+
+      function cambiarCategoria(cat) {
         document.getElementById("box-bible").style.display =
           cat === "versiculos" ? "block" : "none";
-        const plaSelect = document.getElementById("pla");
-        plaSelect.innerHTML = "";
-        (estructura[cat] || []).forEach(
-          (p) => (plaSelect.innerHTML += `<option value="${p}">${p}</option>`),
-        );
 
+        /* Chips de plantilla */
+        const plantillas = estructura[cat] || [];
+        const cont = document.getElementById("pla-chips");
+        cont.innerHTML = "";
+        plantillas.forEach((p, i) => {
+          const btn = document.createElement("button");
+          btn.className = "chip" + (i === 0 ? " active" : "");
+          btn.textContent = p;
+          btn.dataset.pla = p;
+          btn.onclick = () => seleccionarPla(p, btn);
+          cont.appendChild(btn);
+        });
+        document.getElementById("pla").value = plantillas[0] || "";
+
+        /* Campos dinámicos */
         const dyn = document.getElementById("campos-dinamicos");
         if (cat === "creditos") {
-          dyn.innerHTML = `<button onclick="addArea()" style="padding:10px; margin-bottom:10px; width:100%; background:#444; color:white;">+ Bloque</button><div id="area-list"></div>`;
+          dyn.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <label style="margin:0;">Bloques</label>
+            <button class="btn btn-secondary" onclick="addArea()" style="width:auto;padding:5px 11px;font-size:11px;">+ Añadir</button>
+          </div>
+          <div id="area-list"></div>`;
           addArea();
         } else {
-          dyn.innerHTML = `<label>Línea 1 (v1)</label><input type="text" id="v1"><label>Línea 2 (v2)</label><input type="text" id="v2">`;
+          dyn.innerHTML = `
+          <label>Línea principal (v1)</label>
+          <input type="text" id="v1" placeholder="Ej: Juan Pérez" />
+          <label>Línea secundaria (v2)</label>
+          <input type="text" id="v2" placeholder="Ej: Director de Adoración" />`;
         }
         cargarPresetsLateral(cat);
       }
 
+      function seleccionarPla(p, btn) {
+        document
+          .querySelectorAll("#pla-chips .chip")
+          .forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("pla").value = p;
+      }
+
+      /* ── Lanzar ── */
       async function lanzarLive() {
-        const cat = document.getElementById("cat").value;
+        const cat = catActual;
+        let datos = {},
+          label = "";
+
         if (cat === "versiculos") {
-          const ver = document.getElementById("bib-ver").value,
-            lib = document.getElementById("bib-lib").value,
-            cap = document.getElementById("bib-cap").value,
-            ran = document.getElementById("bib-range").value;
-          const v_list = await (
-            await fetch(`/api/bible/${ver}/${lib}/${cap}`)
-          ).json();
+          const ver = document.getElementById("bib-ver").value;
+          const lib = document.getElementById("bib-lib").value;
+          const cap = document.getElementById("bib-cap").value;
+          const ran = document.getElementById("bib-range").value.trim();
+          if (!ver || !lib || !cap) {
+            toast("Selecciona versión, libro y capítulo.", "err");
+            return;
+          }
+          const lista = await fetch(`/api/bible/${ver}/${lib}/${cap}`)
+            .then((r) => r.json())
+            .catch(() => []);
           if (ran.includes("-")) {
             const [ini, fin] = ran.split("-").map(Number);
-            versiculosActuales = v_list.filter(
+            versiculosActuales = lista.filter(
               (v) => Number(v.numero) >= ini && Number(v.numero) <= fin,
             );
             indiceVersiculo = 0;
-            actualizarVersiculoEnPantalla();
+            if (!versiculosActuales.length) {
+              toast("Sin versículos en ese rango.", "err");
+              return;
+            }
+            await actualizarVersiculoEnPantalla();
+            return;
           } else {
-            const vU = v_list.find((v) => v.numero === ran);
-            enviarAConfig(cat, {
+            const vU = lista.find((v) => v.numero === ran);
+            datos = {
               v1: vU ? `${vU.numero}. ${vU.texto}` : "",
               v2: `${lib} ${cap}`,
-            });
+            };
+            label = `${lib} ${cap}:${ran}`;
           }
         } else if (cat === "creditos") {
           const filas = document.querySelectorAll("#area-list .area-row");
-          enviarAConfig(cat, {
+          datos = {
             lista: Array.from(filas).map((d) => ({
               area: d.querySelector(".in-a").value,
               nombres: d
@@ -252,28 +758,50 @@
                 .value.split(",")
                 .map((n) => n.trim()),
             })),
-          });
+          };
+          label = "Créditos";
         } else {
-          enviarAConfig(cat, {
-            v1: document.getElementById("v1").value,
-            v2: document.getElementById("v2").value,
-          });
+          const v1 = document.getElementById("v1")?.value || "";
+          datos = { v1, v2: document.getElementById("v2")?.value || "" };
+          label = v1 || cat;
         }
+
+        await enviarAConfig(cat, datos);
+        badge(label);
+        toast(`Lanzado: ${label}`);
       }
 
-      function actualizarVersiculoEnPantalla() {
+      /* ── Navegación versículos ── */
+      async function actualizarVersiculoEnPantalla() {
         const v = versiculosActuales[indiceVersiculo];
-        enviarAConfig("versiculos", {
+        const lib = document.getElementById("bib-lib").value;
+        const cap = document.getElementById("bib-cap").value;
+        await enviarAConfig("versiculos", {
           v1: `${v.numero}. ${v.texto}`,
-          v2: `${document.getElementById("bib-lib").value} ${document.getElementById("bib-cap").value}`,
+          v2: `${lib} ${cap}`,
         });
+        badge(`${lib} ${cap}:${v.numero}`);
       }
 
+      async function navegarVersiculo(dir) {
+        if (!versiculosActuales.length) {
+          toast("Primero lanza un rango.", "inf");
+          return;
+        }
+        const n = indiceVersiculo + dir;
+        if (n < 0 || n >= versiculosActuales.length) return;
+        indiceVersiculo = n;
+        await actualizarVersiculoEnPantalla();
+      }
+
+      /* ── Enviar config ── */
       async function enviarAConfig(cat, datos) {
-        let config = await (await fetch("config.json?t=" + Date.now()))
-          .json()
-          .catch(() => ({}));
-        // CLAVE: update: Date.now() genera un ID distinto siempre para que OBS reaccione
+        let config = {};
+        try {
+          config = await fetch(`config.json?_=${Date.now()}`).then((r) =>
+            r.json(),
+          );
+        } catch {}
         config[cat] = {
           plantilla: document.getElementById("pla").value,
           datos,
@@ -286,126 +814,236 @@
         });
       }
 
+      /* ── Apagar capa (sin confirmación) ── */
+      async function apagarCapa() {
+        let config = {};
+        try {
+          config = await fetch("config.json").then((r) => r.json());
+        } catch {}
+        delete config[catActual];
+        await fetch("/api/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(config),
+        });
+        badge(null);
+        document
+          .querySelectorAll(".preset-card")
+          .forEach((c) => c.classList.remove("active"));
+        toast(`Capa "${catActual}" apagada.`, "inf");
+      }
+
+      /* ── Presets: cargar sidebar ── */
       async function cargarPresetsLateral(cat) {
-        const res = await fetch(`/api/presets/${cat}`);
-        presetsMemoria = await res.json();
+        presetsMemoria = await fetch(`/api/presets/${cat}`).then((r) =>
+          r.json(),
+        );
         const lista = document.getElementById("lista-presets");
         lista.innerHTML = "";
+        if (!presetsMemoria.length) {
+          lista.innerHTML = `<p class="preset-empty">Sin presets guardados</p>`;
+          return;
+        }
         presetsMemoria.forEach((p, i) => {
           const div = document.createElement("div");
           div.className = "preset-card";
-          div.innerHTML = `<strong>${p.label}</strong><br><small>${p.plantilla}</small><button class="btn-del" onclick="borrarPreset(${i}, event)">🗑</button>`;
-          div.onclick = async () => {
-            document
-              .querySelectorAll(".preset-card")
-              .forEach((c) => c.classList.remove("active"));
-            div.classList.add("active");
-            document.getElementById("pla").value = p.plantilla;
-            if (p.datos.isBible) {
-              document.getElementById("bib-ver").value = p.datos.params.ver;
-              await cargarLibros(p.datos.params.lib);
-              await cargarCapitulos(p.datos.params.cap);
-              document.getElementById("bib-range").value = p.datos.params.ran;
-            } else if (p.datos.lista) {
-              document.getElementById("area-list").innerHTML = "";
-              p.datos.lista.forEach((item) =>
-                addArea(item.area, item.nombres.join(", ")),
-              );
-            } else {
-              if (document.getElementById("v1"))
-                document.getElementById("v1").value = p.datos.v1 || "";
-              if (document.getElementById("v2"))
-                document.getElementById("v2").value = p.datos.v2 || "";
-            }
-          };
+          div.innerHTML = `
+  <div class="preset-info">
+    <div class="preset-label">${p.label}</div>
+    <div class="preset-sub">${p.plantilla}</div>
+  </div>
+
+  <div style="display:flex;gap:4px;">
+
+    <button
+      class="btn-icon"
+      title="Editar"
+      onclick="editarPreset(${i}, event)">
+      ✎
+    </button>
+
+    <button
+      class="btn-icon"
+      title="Eliminar"
+      onclick="borrarPreset(${i}, event)">
+      ✕
+    </button>
+
+  </div>
+`;
+          div.addEventListener("click", () => cargarPreset(p, div));
           lista.appendChild(div);
         });
       }
 
+      /* ── Presets: cargar en formulario ── */
+      async function cargarPreset(p, div) {
+        document
+          .querySelectorAll(".preset-card")
+          .forEach((c) => c.classList.remove("active"));
+        div.classList.add("active");
+        // Seleccionar plantilla correcta en chips
+        document.querySelectorAll("#pla-chips .chip").forEach((c) => {
+          c.classList.toggle("active", c.dataset.pla === p.plantilla);
+        });
+        document.getElementById("pla").value = p.plantilla;
+        if (p.datos.isBible) {
+          document.getElementById("bib-ver").value = p.datos.params.ver;
+          await cargarLibros(p.datos.params.lib);
+          await cargarCapitulos(p.datos.params.cap);
+          document.getElementById("bib-range").value = p.datos.params.ran;
+        } else if (p.datos.lista) {
+          document.getElementById("area-list").innerHTML = "";
+          p.datos.lista.forEach((item) =>
+            addArea(item.area, item.nombres.join(", ")),
+          );
+        } else {
+          const v1 = document.getElementById("v1"),
+            v2 = document.getElementById("v2");
+          if (v1) v1.value = p.datos.v1 || "";
+          if (v2) v2.value = p.datos.v2 || "";
+        }
+      }
+
+      /* ── Presets: guardar (sin confirmación) ── */
       async function guardarPreset() {
-        const cat = document.getElementById("cat").value;
-        let datos = {},
-          label = document.getElementById("v1")?.value || "Preset";
-        if (cat === "versiculos") {
-          label = `${document.getElementById("bib-lib").value} ${document.getElementById("bib-cap").value}:${document.getElementById("bib-range").value}`;
+        let datos = {};
+
+        if (catActual === "versiculos") {
           datos = {
             isBible: true,
             params: {
               ver: document.getElementById("bib-ver").value,
               lib: document.getElementById("bib-lib").value,
               cap: document.getElementById("bib-cap").value,
-              ran: document.getElementById("bib-range").value,
+              ran: document.getElementById("bib-range").value.trim(),
             },
           };
-        } else if (cat === "creditos") {
+        } else if (catActual === "creditos") {
           const filas = document.querySelectorAll("#area-list .area-row");
+
           datos = {
-            lista: Array.from(filas).map((d) => ({
-              area: d.querySelector(".in-a").value,
-              nombres: d
+            lista: Array.from(filas).map((f) => ({
+              area: f.querySelector(".in-a").value,
+              nombres: f
                 .querySelector(".in-n")
                 .value.split(",")
-                .map((n) => n.trim()),
+                .map((n) => n.trim())
+                .filter(Boolean),
             })),
           };
-          label = `CRÉDITOS: ${datos.lista[0]?.area || "Producción"}`;
         } else {
           datos = {
-            v1: document.getElementById("v1").value,
-            v2: document.getElementById("v2").value,
+            v1: document.getElementById("v1")?.value || "",
+            v2: document.getElementById("v2")?.value || "",
           };
         }
-        presetsMemoria.push({
+
+        let label = "";
+
+        if (catActual === "versiculos") {
+          const lib = document.getElementById("bib-lib").value;
+          const cap = document.getElementById("bib-cap").value;
+          const ran = document.getElementById("bib-range").value;
+
+          label = `${lib} ${cap}:${ran}`;
+        } else if (catActual === "creditos") {
+          label = "Créditos";
+        } else {
+          const v1 = document.getElementById("v1")?.value || "";
+          const v2 = document.getElementById("v2")?.value || "";
+
+          label = v1 || v2 || "Sin título";
+        }
+
+        const preset = {
           label,
           plantilla: document.getElementById("pla").value,
           datos,
-        });
-        await fetch(`/api/presets/${cat}`, {
+        };
+
+        if (modoEdicion && presetActivo !== null) {
+          presetsMemoria[presetActivo] = preset;
+
+          toast("Preset actualizado.");
+        } else {
+          presetsMemoria.push(preset);
+
+          toast("Preset guardado.");
+        }
+
+        await fetch(`/api/presets/${catActual}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(presetsMemoria),
         });
-        cargarPresetsLateral(cat);
+
+        modoEdicion = false;
+        presetActivo = null;
+
+        cargarPresetsLateral(catActual);
       }
 
+      function editarPreset(i, e) {
+        e.stopPropagation();
+
+        presetActivo = i;
+        modoEdicion = true;
+
+        const cards = document.querySelectorAll(".preset-card");
+
+        cards.forEach((c) => c.classList.remove("active"));
+
+        if (cards[i]) {
+          cards[i].classList.add("active");
+        }
+
+        cargarPreset(presetsMemoria[i], cards[i]);
+
+        toast("Modo edición activado.", "inf");
+      }
+
+      /* ── Presets: borrar individual (sin confirmación) ── */
       async function borrarPreset(i, e) {
         e.stopPropagation();
-        if (!confirm("¿Eliminar?")) return;
-        const cat = document.getElementById("cat").value;
         presetsMemoria.splice(i, 1);
-        await fetch(`/api/presets/${cat}`, {
+        await fetch(`/api/presets/${catActual}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(presetsMemoria),
         });
-        cargarPresetsLateral(cat);
+        cargarPresetsLateral(catActual);
+        toast("Preset eliminado.", "inf");
       }
 
+      /* ── Presets: limpiar todos (CON confirmación) ── */
       async function limpiarPresets() {
-        if (!confirm("¿BORRAR TODO?")) return;
-        const cat = document.getElementById("cat").value;
-        await fetch(`/api/presets/${cat}`, {
+        await fetch(`/api/presets/${catActual}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify([]),
         });
-        cargarPresetsLateral(cat);
+        cargarPresetsLateral(catActual);
+        toast("Todos los presets eliminados.", "inf");
       }
 
+      /* ── Biblia ── */
       async function cargarVersionesReales() {
-        const res = await fetch("/api/bible/list");
-        const versiones = await res.json();
+        const vers = await fetch("/api/bible/list").then((r) => r.json());
         const sel = document.getElementById("bib-ver");
         sel.innerHTML = '<option value="">-- Versión --</option>';
-        versiones.forEach(
+        vers.forEach(
           (v) => (sel.innerHTML += `<option value="${v}">${v}</option>`),
         );
       }
-
       async function cargarLibros(pre = null) {
         const ver = document.getElementById("bib-ver").value;
         if (!ver) return;
-        bibliaData = await (await fetch(`/api/bible/${ver}/metadata`)).json();
+        bibliaData = await fetch(`/api/bible/${ver}/metadata`).then((r) =>
+          r.json(),
+        );
         const sel = document.getElementById("bib-lib");
         sel.innerHTML = '<option value="">-- Libro --</option>';
         bibliaData.forEach(
@@ -417,10 +1055,10 @@
           await cargarCapitulos();
         }
       }
-
       async function cargarCapitulos(pre = null) {
-        const libroNom = document.getElementById("bib-lib").value;
-        const libro = bibliaData.find((l) => l.nombre === libroNom);
+        const libro = bibliaData.find(
+          (l) => l.nombre === document.getElementById("bib-lib").value,
+        );
         const sel = document.getElementById("bib-cap");
         sel.innerHTML = "";
         if (libro)
@@ -429,34 +1067,15 @@
         if (pre) sel.value = pre;
       }
 
+      /* ── Créditos ── */
       function addArea(a = "", n = "") {
         const div = document.createElement("div");
         div.className = "area-row";
-        div.style =
-          "background:#111; padding:10px; margin-top:5px; border-radius:6px; display:flex; gap:5px;";
-        div.innerHTML = `<input type="text" class="in-a" placeholder="Área" value="${a}" style="margin:0;"><input type="text" class="in-n" placeholder="Nombres" value="${n}" style="margin:0;">`;
+        div.innerHTML = `
+        <input type="text" class="in-a" placeholder="Área" value="${a}" />
+        <input type="text" class="in-n" placeholder="Nombres, separados por coma" value="${n}" />
+        <button class="btn-icon" onclick="this.parentElement.remove()">✕</button>`;
         document.getElementById("area-list").appendChild(div);
-      }
-
-      async function apagarCapa() {
-        let config = await (await fetch("config.json"))
-          .json()
-          .catch(() => ({}));
-        delete config[document.getElementById("cat").value];
-        await fetch("/api/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(config),
-        });
-      }
-
-      async function navegarVersiculo(dir) {
-        if (versiculosActuales.length === 0) return;
-        indiceVersiculo = Math.max(
-          0,
-          Math.min(versiculosActuales.length - 1, indiceVersiculo + dir),
-        );
-        actualizarVersiculoEnPantalla();
       }
 
       init();

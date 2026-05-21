@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1920, height=1080" />
-    <title>Lower Third IASD Corregida</title>
+    <title>Lower Third IASD Estandarizada</title>
 
     <style>
       html,
@@ -16,10 +16,21 @@
         overflow: hidden;
       }
 
+      /* Contenedor principal neutralizado para el control absoluto del render */
       #scene {
         position: relative;
         width: 1920px;
         height: 1080px;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.1s ease, visibility 0.1s ease;
+        transform: translateY(100px);
+      }
+
+      /* El contenedor cobra vida y visibilidad solo bajo control de la clase .animar */
+      #scene.animar {
+        opacity: 1;
+        visibility: visible;
       }
 
       /* Punto de anclaje */
@@ -41,27 +52,19 @@
         border-radius: 50%;
         transform: scale(0);
         opacity: 0;
-        animation: circleAnim 8s ease-in-out 1s forwards;
         will-change: transform, opacity;
       }
 
+      /* Animación vinculada a la clase contenedora */
+      .animar .circle {
+        animation: circleAnim 8s ease-in-out 1s forwards;
+      }
+
       @keyframes circleAnim {
-        0% {
-          transform: scale(0);
-          opacity: 0;
-        }
-        4% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        92% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0);
-          opacity: 0;
-        }
+        0% { transform: scale(0); opacity: 0; }
+        4% { transform: scale(1); opacity: 1; }
+        92% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0); opacity: 0; }
       }
 
       /* ===== LOGO ===== */
@@ -71,27 +74,19 @@
         height: auto;
         transform: scale(0);
         opacity: 0;
-        animation: logoAnim 7.6s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
         will-change: transform, opacity;
       }
 
+      /* Animación vinculada a la clase contenedora */
+      .animar .logo {
+        animation: logoAnim 7.6s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards;
+      }
+
       @keyframes logoAnim {
-        2% {
-          transform: scale(1);
-          opacity: 0;
-        }
-        12% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        92% {
-          transform: scale(1);
-          opacity: 1;
-        }
-        100% {
-          transform: scale(0);
-          opacity: 0;
-        }
+        2% { transform: scale(1); opacity: 0; }
+        12% { transform: scale(1); opacity: 1; }
+        92% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0); opacity: 0; }
       }
 
       /* ===== RECTÁNGULO (FONDO) ===== */
@@ -106,27 +101,19 @@
         opacity: 0;
         transform: scaleX(0);
         transform-origin: left center;
-        animation: rectAnim 10s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         will-change: transform, opacity;
       }
 
+      /* Animación vinculada a la clase contenedora */
+      .animar .rect {
+        animation: rectAnim 10s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
       @keyframes rectAnim {
-        0% {
-          transform: scaleX(0);
-          opacity: 0;
-        }
-        8% {
-          transform: scaleX(1);
-          opacity: 1;
-        }
-        92% {
-          transform: scaleX(1);
-          opacity: 1;
-        }
-        100% {
-          transform: scaleX(0);
-          opacity: 0;
-        }
+        0% { transform: scaleX(0); opacity: 0; }
+        8% { transform: scaleX(1); opacity: 1; }
+        92% { transform: scaleX(1); opacity: 1; }
+        100% { transform: scaleX(0); opacity: 0; }
       }
 
       /* ===== TEXTOS ===== */
@@ -136,7 +123,6 @@
         font-family: "AdventSans-Logo", sans-serif;
         color: white;
         opacity: 0;
-        animation: textAnim 7.4s ease-out 1.4s forwards;
         will-change: transform, opacity;
       }
 
@@ -151,22 +137,16 @@
         font-style: italic;
       }
 
+      /* Animaciones vinculadas a la clase contenedora */
+      .animar .texto {
+        animation: textAnim 7.4s ease-out 1.4s forwards;
+      }
+
       @keyframes textAnim {
-        1% {
-          opacity: 0;
-          transform: translateX(-15px);
-        }
-        12% {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        93% {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        100% {
-          opacity: 0;
-        }
+        1% { transform: translateX(-15px); opacity: 0; }
+        12% { transform: translateX(0); opacity: 1; }
+        93% { transform: translateX(0); opacity: 1; }
+        100% { opacity: 0; }
       }
 
       @font-face {
@@ -191,47 +171,35 @@
 
     <script>
       /**
-       * FUNCIÓN MAESTRA: Recibe v1 (Nombre) y v2 (Cargo)
+       * FUNCIÓN MAESTRA ESTANDARIZADA
        */
       window.recibirDatos = function (datos) {
+        const overlay = document.getElementById("scene");
+
+        // Si se apaga la capa desde el panel de control
+        if (!datos.v1 && !datos.v2) {
+          overlay.classList.remove("animar");
+          return;
+        }
+
+        // 1. Congelamos el render y removemos la clase de golpe
+        overlay.classList.remove("animar");
+
+        // 2. Modificamos los contenidos a oscuras sin parpadeos residuales
         document.getElementById("texto1").innerText = datos.v1 || "";
         document.getElementById("texto2").innerText = datos.v2 || "";
 
-        iniciarEfectos();
-      };
+        // 3. Forzamos Reflow síncrono del motor web
+        void overlay.offsetWidth;
 
-      /**
-       * Reset total de animaciones para permitir lanzamientos consecutivos
-       */
-      function iniciarEfectos() {
-        const elementos = [
-          document.getElementById("circle-white"),
-          document.getElementById("logo-iasd"),
-          document.getElementById("rect-bg"),
-          document.getElementById("texto1"),
-          document.getElementById("texto2"),
-        ];
-
-        // 1. Matamos las animaciones
-        elementos.forEach((el) => {
-          if (el) {
-            el.style.animation = "none";
-            void el.offsetWidth; // Reflow: Fuerza al navegador a reiniciar el reloj
-          }
+        // 4. Doble ciclo de animación por hardware (requestAnimationFrame)
+        // Esto limpia por completo el búfer anterior garantizando un relanzamiento limpio
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            overlay.classList.add("animar");
+          });
         });
-
-        // 2. Re-aplicamos las animaciones con sus tiempos originales
-        document.getElementById("circle-white").style.animation =
-          "circleAnim 8s ease-in-out 1s forwards";
-        document.getElementById("logo-iasd").style.animation =
-          "logoAnim 7.6s cubic-bezier(0.4, 0, 0.2, 1) 1.2s forwards";
-        document.getElementById("rect-bg").style.animation =
-          "rectAnim 10s cubic-bezier(0.4, 0, 0.2, 1) forwards";
-
-        const textAnim = "textAnim 7.4s ease-out 1.4s forwards";
-        document.getElementById("texto1").style.animation = textAnim;
-        document.getElementById("texto2").style.animation = textAnim;
-      }
+      };
     </script>
   </body>
 </html>

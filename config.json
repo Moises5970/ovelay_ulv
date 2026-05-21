@@ -1,18 +1,10 @@
 {
-    "creditos": {
-        "plantilla": "creditos1",
-        "datos": {
-            "v1": "",
-            "v2": ""
-        },
-        "update": 1776485441860
-    },
     "lower_thirds": {
-        "plantilla": "cintilla_ulv_vs01",
+        "plantilla": "official_lower",
         "datos": {
-            "v1": "Moises",
-            "v2": "Martinez"
+            "v1": "Nelson",
+            "v2": "Ortiz"
         },
-        "update": 1776485559235
+        "update": 1779327207183
     }
 }
