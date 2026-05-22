@@ -1,0 +1,35 @@
+[
+    {
+        "label": "Moises",
+        "plantilla": "2026_graduacion",
+        "datos": {
+            "v1": "Moises",
+            "v2": "Martinez",
+            "v3": "Hernández",
+            "v4": ""
+        }
+    },
+    {
+        "label": "Moises",
+        "plantilla": "official_lower",
+        "datos": {
+            "v1": "Moises",
+            "v2": "Martinez",
+            "v3": "Hernández",
+            "v4": ""
+        }
+    },
+    {
+        "label": "Rut 3:1-10",
+        "plantilla": "elegante",
+        "datos": {
+            "isBible": true,
+            "params": {
+                "ver": "SpanishRVR1960Bible",
+                "lib": "Rut",
+                "cap": "3",
+                "ran": "1-10"
+            }
+        }
+    }
+]

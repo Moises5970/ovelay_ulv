@@ -642,7 +642,6 @@
         if (e.target === e.currentTarget) cerrarModal();
       });
 
-      /* ── Badge en vivo ── */
       function badge(label) {
         const c = document.getElementById("badge-cont");
         c.innerHTML = label
@@ -684,10 +683,8 @@
       function cambiarCategoria(cat) {
         document.getElementById("box-bible").style.display =
           cat === "versiculos" ? "block" : "none";
-
         document.getElementById("box-himnario").style.display =
           cat === "himnarios" ? "block" : "none";
-
         document.getElementById("box-datos").style.display =
           cat === "versiculos" || cat === "himnarios" ? "none" : "block";
 
@@ -707,18 +704,25 @@
         const dyn = document.getElementById("campos-dinamicos");
         if (cat === "creditos") {
           dyn.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <label style="margin:0;">Bloques</label>
-            <button class="btn btn-secondary" onclick="addArea()" style="width:auto;padding:5px 11px;font-size:11px;">+ Añadir</button>
-          </div>
-          <div id="area-list"></div>`;
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <label style="margin:0;">Bloques</label>
+          <button class="btn btn-secondary" onclick="addArea()" style="width:auto;padding:5px 11px;font-size:11px;">+ Añadir</button>
+        </div>
+        <div id="area-list"></div>`;
           addArea();
+        } else if (cat === "versiculos" || cat === "himnarios") {
+          dyn.innerHTML = "";
         } else {
           dyn.innerHTML = `
-          <label>Línea principal (v1)</label>
-          <input type="text" id="v1" placeholder="Ej: Juan Pérez" />
-          <label>Línea secundaria (v2)</label>
-          <input type="text" id="v2" placeholder="Ej: Director de Adoración" />`;
+        <label>Línea principal (v1)</label>
+        <input type="text" id="v1" placeholder="Nombre" />
+        <label>Línea secundaria (v2)</label>
+        <input type="text" id="v2" placeholder="Cargo" />
+        <label>Línea adicional (v3)</label>
+        <input type="text" id="v3" placeholder="Participacion" />
+        <label>Línea adicional (v4) - Opcional</label>
+        <input type="text" id="v4" placeholder="Ej: Universidad Linda Vista" />
+      `;
         }
         cargarPresetsLateral(cat);
       }
@@ -742,10 +746,8 @@
           const lib = document.getElementById("bib-lib").value;
           const cap = document.getElementById("bib-cap").value;
           const ran = document.getElementById("bib-range").value.trim();
-          if (!ver || !lib || !cap) {
-            toast("Selecciona versión, libro y capítulo.", "err");
-            return;
-          }
+          if (!ver || !lib || !cap)
+            return toast("Selecciona versión, libro y capítulo.", "err");
 
           const lista = await fetch(`/api/bible/${ver}/${lib}/${cap}`)
             .then((r) => r.json())
@@ -756,10 +758,8 @@
               (v) => Number(v.numero) >= ini && Number(v.numero) <= fin,
             );
             indiceVersiculo = 0;
-            if (!versiculosActuales.length) {
-              toast("Sin versículos en ese rango.", "err");
-              return;
-            }
+            if (!versiculosActuales.length)
+              return toast("Sin versículos en ese rango.", "err");
             await actualizarVersiculoEnPantalla();
             return;
           } else {
@@ -773,19 +773,14 @@
         } else if (cat === "himnarios") {
           const ver = document.getElementById("him-ver").value;
           const num = document.getElementById("him-num").value;
-          if (!ver || !num) {
-            toast("Selecciona versión e himno.", "err");
-            return;
-          }
+          if (!ver || !num) return toast("Selecciona versión e himno.", "err");
 
           himnoPasajesActuales = await fetch(`/api/himnario/${ver}/${num}`)
             .then((r) => r.json())
             .catch(() => []);
           indiceHimnoPasaje = 0;
-          if (!himnoPasajesActuales.length) {
-            toast("El himno no tiene estrofas.", "err");
-            return;
-          }
+          if (!himnoPasajesActuales.length)
+            return toast("El himno no tiene estrofas.", "err");
           await actualizarHimnarioEnPantalla();
           return;
         } else if (cat === "creditos") {
@@ -796,14 +791,19 @@
               nombres: d
                 .querySelector(".in-n")
                 .value.split(",")
-                .map((n) => n.trim()),
+                .map((n) => n.trim())
+                .filter(Boolean),
             })),
           };
           label = "Créditos";
         } else {
-          const v1 = document.getElementById("v1")?.value || "";
-          datos = { v1, v2: document.getElementById("v2")?.value || "" };
-          label = v1 || cat;
+          datos = {
+            v1: document.getElementById("v1")?.value?.trim() || "",
+            v2: document.getElementById("v2")?.value?.trim() || "",
+            v3: document.getElementById("v3")?.value?.trim() || "",
+            v4: document.getElementById("v4")?.value?.trim() || "",
+          };
+          label = datos.v1 || cat;
         }
 
         await enviarAConfig(cat, datos);
@@ -811,7 +811,7 @@
         toast(`🚀 EN PANTALLA: ${label}`, "ok");
       }
 
-      /* ── Navegación e inyección ── */
+      /* ── Funciones de Versículos ── */
       async function actualizarVersiculoEnPantalla() {
         const v = versiculosActuales[indiceVersiculo];
         const lib = document.getElementById("bib-lib").value;
@@ -820,42 +820,31 @@
           v1: `${v.numero}. ${v.texto}`,
           v2: `${lib} ${cap}`,
         });
-        const label = `${lib} ${cap}:${v.numero}`;
-        badge(label);
-        toast(`📖 Lanzado: ${label}`, "ok");
+        badge(`${lib} ${cap}:${v.numero}`);
+        toast(`📖 Lanzado: ${lib} ${cap}:${v.numero}`, "ok");
       }
 
       function navegarVersiculo(dir) {
-        if (!versiculosActuales.length) {
-          toast("Primero lanza un rango.", "inf");
-          return;
-        }
+        if (!versiculosActuales.length)
+          return toast("Primero lanza un rango.", "inf");
         const n = indiceVersiculo + dir;
         if (n < 0 || n >= versiculosActuales.length) return;
         indiceVersiculo = n;
         actualizarVersiculoEnPantalla();
       }
 
+      /* ── Funciones de Himnario ── */
       async function actualizarHimnarioEnPantalla() {
         if (!himnoPasajesActuales || himnoPasajesActuales.length === 0) return;
-
         const p = himnoPasajesActuales[indiceHimnoPasaje];
-
-        await enviarAConfig("himnarios", {
-          v1: p.v1,
-          v2: p.v2,
-          tipo: p.tipo,
-        });
-
+        await enviarAConfig("himnarios", { v1: p.v1, v2: p.v2, tipo: p.tipo });
         badge(p.identificador);
         toast(`🎵 Cambiado a: ${p.identificador.replace("Himno ", "")}`, "ok");
       }
 
       function navegarHimnario(dir) {
-        if (!himnoPasajesActuales || !himnoPasajesActuales.length) {
-          toast("Primero selecciona un himno.", "inf");
-          return;
-        }
+        if (!himnoPasajesActuales || !himnoPasajesActuales.length)
+          return toast("Primero selecciona un himno.", "inf");
         const n = indiceHimnoPasaje + dir;
         if (n < 0 || n >= himnoPasajesActuales.length) return;
         indiceHimnoPasaje = n;
@@ -896,7 +885,7 @@
         document
           .querySelectorAll(".preset-card")
           .forEach((c) => c.classList.remove("active"));
-        toast(`⏹ Capa "${catActual.toUpperCase()}" removida con éxito`, "inf");
+        toast(`⏹ Capa "${catActual.toUpperCase()}" removida`, "inf");
       }
 
       /* ── Presets ── */
@@ -914,14 +903,14 @@
           const div = document.createElement("div");
           div.className = "preset-card";
           div.innerHTML = `
-            <div class="preset-info">
-              <div class="preset-label">${p.label}</div>
-              <div class="preset-sub">${p.plantilla}</div>
-            </div>
-            <div style="display:flex;gap:4px;">
-              <button class="btn-icon" title="Editar" onclick="editarPreset(${i}, event)">✎</button>
-              <button class="btn-icon" title="Eliminar" onclick="borrarPreset(${i}, event)">✕</button>
-            </div>`;
+        <div class="preset-info">
+          <div class="preset-label">${p.label}</div>
+          <div class="preset-sub">${p.plantilla}</div>
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="btn-icon" title="Editar" onclick="editarPreset(${i}, event)">✎</button>
+          <button class="btn-icon" title="Eliminar" onclick="borrarPreset(${i}, event)">✕</button>
+        </div>`;
           div.addEventListener("click", () => cargarPreset(p, div));
           lista.appendChild(div);
         });
@@ -932,9 +921,11 @@
           .querySelectorAll(".preset-card")
           .forEach((c) => c.classList.remove("active"));
         div.classList.add("active");
-        document.querySelectorAll("#pla-chips .chip").forEach((c) => {
-          c.classList.toggle("active", c.dataset.pla === p.plantilla);
-        });
+        document
+          .querySelectorAll("#pla-chips .chip")
+          .forEach((c) =>
+            c.classList.toggle("active", c.dataset.pla === p.plantilla),
+          );
         document.getElementById("pla").value = p.plantilla;
 
         if (p.datos.isBible) {
@@ -955,14 +946,19 @@
             document.getElementById("v1").value = p.datos.v1 || "";
           if (document.getElementById("v2"))
             document.getElementById("v2").value = p.datos.v2 || "";
+          if (document.getElementById("v3"))
+            document.getElementById("v3").value = p.datos.v3 || "";
+          if (document.getElementById("v4"))
+            document.getElementById("v4").value = p.datos.v4 || "";
         }
       }
 
       async function guardarPreset() {
         let datos = {},
           label = "";
+        const cat = catActual;
 
-        if (catActual === "versiculos") {
+        if (cat === "versiculos") {
           const lib = document.getElementById("bib-lib").value;
           const cap = document.getElementById("bib-cap").value;
           const ran = document.getElementById("bib-range").value;
@@ -976,15 +972,13 @@
               ran,
             },
           };
-        } else if (catActual === "himnarios") {
+        } else if (cat === "himnarios") {
           const ver = document.getElementById("him-ver").value;
           const num = document.getElementById("him-num").value;
           const selElement = document.getElementById("him-num");
-          const textoSeleccionado =
-            selElement.options[selElement.selectedIndex]?.text || "Himno";
-          label = textoSeleccionado;
+          label = selElement.options[selElement.selectedIndex]?.text || "Himno";
           datos = { isHimno: true, params: { ver, num } };
-        } else if (catActual === "creditos") {
+        } else if (cat === "creditos") {
           const filas = document.querySelectorAll("#area-list .area-row");
           datos = {
             lista: Array.from(filas).map((f) => ({
@@ -998,10 +992,13 @@
           };
           label = "Créditos";
         } else {
-          const v1 = document.getElementById("v1")?.value || "";
-          const v2 = document.getElementById("v2")?.value || "";
-          datos = { v1, v2 };
-          label = v1 || v2 || "Sin título";
+          datos = {
+            v1: document.getElementById("v1")?.value?.trim() || "",
+            v2: document.getElementById("v2")?.value?.trim() || "",
+            v3: document.getElementById("v3")?.value?.trim() || "",
+            v4: document.getElementById("v4")?.value?.trim() || "",
+          };
+          label = datos.v1 || cat;
         }
 
         const preset = {
@@ -1010,15 +1007,11 @@
           datos,
         };
 
-        if (modoEdicion && presetActivo !== null) {
+        if (modoEdicion && presetActivo !== null)
           presetsMemoria[presetActivo] = preset;
-          toast("Preset actualizado.");
-        } else {
-          presetsMemoria.push(preset);
-          toast("Preset guardado.");
-        }
+        else presetsMemoria.push(preset);
 
-        await fetch(`/api/presets/${catActual}`, {
+        await fetch(`/api/presets/${cat}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(presetsMemoria),
@@ -1026,7 +1019,8 @@
 
         modoEdicion = false;
         presetActivo = null;
-        cargarPresetsLateral(catActual);
+        cargarPresetsLateral(cat);
+        toast("Preset guardado.");
       }
 
       function editarPreset(i, e) {
@@ -1062,7 +1056,7 @@
         toast("Todos los presets eliminados.", "inf");
       }
 
-      /* ── Mapeos de Biblia ── */
+      /* ── Biblia ── */
       async function cargarVersionesReales() {
         const vers = await fetch("/api/bible/list").then((r) => r.json());
         const sel = document.getElementById("bib-ver");
@@ -1071,6 +1065,7 @@
           (v) => (sel.innerHTML += `<option value="${v}">${v}</option>`),
         );
       }
+
       async function cargarLibros(pre = null) {
         const ver = document.getElementById("bib-ver").value;
         if (!ver) return;
@@ -1088,6 +1083,7 @@
           await cargarCapitulos();
         }
       }
+
       async function cargarCapitulos(pre = null) {
         const libro = bibliaData.find(
           (l) => l.nombre === document.getElementById("bib-lib").value,
@@ -1100,7 +1096,7 @@
         if (pre) sel.value = pre;
       }
 
-      /* ── Mapeos de Himnario ── */
+      /* ── Himnario ── */
       async function cargarVersionesHimnario() {
         try {
           const versiones = await fetch("/api/himnario/list").then((r) =>
@@ -1112,8 +1108,8 @@
             (v) =>
               (sel.innerHTML += `<option value="${v}">${v.replace(".xml", "")}</option>`),
           );
-        } catch (error) {
-          console.error("Error al cargar versiones de himnario:", error);
+        } catch (e) {
+          console.error(e);
         }
       }
 
@@ -1128,15 +1124,16 @@
           const listaHimnos = await fetch(
             `/api/himnario/${version}/metadata`,
           ).then((r) => r.json());
-          listaHimnos.forEach((h) => {
-            selHimno.innerHTML += `<option value="${h.numero}">${h.numero} - ${h.titulo}</option>`;
-          });
+          listaHimnos.forEach(
+            (h) =>
+              (selHimno.innerHTML += `<option value="${h.numero}">${h.numero} - ${h.titulo}</option>`),
+          );
           if (preSelectedHimno) {
             selHimno.value = preSelectedHimno;
             await cargarPasajesHimno();
           }
-        } catch (error) {
-          console.error("Error al obtener la lista de himnos:", error);
+        } catch (e) {
+          console.error(e);
         }
       }
 
@@ -1144,15 +1141,14 @@
         const version = document.getElementById("him-ver").value;
         const numero = document.getElementById("him-num").value;
         if (!version || !numero) return;
-
         try {
           himnoPasajesActuales = await fetch(
             `/api/himnario/${version}/${numero}`,
           ).then((r) => r.json());
           indiceHimnoPasaje = 0;
           await actualizarHimnarioEnPantalla();
-        } catch (error) {
-          console.error("Error al obtener los pasajes del himno:", error);
+        } catch (e) {
+          console.error(e);
         }
       }
 
@@ -1161,9 +1157,9 @@
         const div = document.createElement("div");
         div.className = "area-row";
         div.innerHTML = `
-        <input type="text" class="in-a" placeholder="Área" value="${a}" />
-        <input type="text" class="in-n" placeholder="Nombres, separados por coma" value="${n}" />
-        <button class="btn-icon" onclick="this.parentElement.remove()">✕</button>`;
+      <input type="text" class="in-a" placeholder="Área" value="${a}" />
+      <input type="text" class="in-n" placeholder="Nombres, separados por coma" value="${n}" />
+      <button class="btn-icon" onclick="this.parentElement.remove()">✕</button>`;
         document.getElementById("area-list").appendChild(div);
       }
 

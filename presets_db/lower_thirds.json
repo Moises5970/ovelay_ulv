@@ -1,0 +1,22 @@
+[
+    {
+        "label": "Moises",
+        "plantilla": "2026_graduacion",
+        "datos": {
+            "v1": "Moises",
+            "v2": "Martinez",
+            "v3": "Hernández",
+            "v4": ""
+        }
+    },
+    {
+        "label": "Moises",
+        "plantilla": "official_lower",
+        "datos": {
+            "v1": "Moises",
+            "v2": "Martinez",
+            "v3": "Hernández",
+            "v4": ""
+        }
+    }
+]
