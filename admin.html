@@ -464,7 +464,6 @@
     </style>
   </head>
   <body>
-    <!-- ═══════ SIDEBAR ═══════ -->
     <div class="sidebar">
       <div class="sidebar-head">
         <div class="sidebar-head-label">Categoría</div>
@@ -493,9 +492,7 @@
       </div>
     </div>
 
-    <!-- ═══════ MAIN ═══════ -->
     <div class="main">
-      <!-- Header -->
       <div
         style="
           display: flex;
@@ -514,17 +511,14 @@
         <div id="badge-cont"></div>
       </div>
 
-      <!-- Plantilla (chips) -->
       <div class="section">
         <div class="section-title">Plantilla</div>
         <div id="pla-chips" class="pla-chips"></div>
-        <!-- Valor oculto para compatibilidad con el resto del código -->
         <input type="hidden" id="pla" />
       </div>
 
-      <!-- Datos -->
-      <div class="section">
-        <div class="section-title">Datos</div>
+      <div class="section" id="box-datos">
+        <div class="section-title" id="datos-section-title">Datos</div>
         <div id="campos-dinamicos">
           <label>Línea principal (v1)</label>
           <input type="text" id="v1" placeholder="Ej: Juan Pérez" />
@@ -533,7 +527,6 @@
         </div>
       </div>
 
-      <!-- Biblia -->
       <div class="section" id="box-bible" style="display: none">
         <div class="section-title">Pasaje bíblico</div>
         <label>Versión</label>
@@ -558,7 +551,30 @@
         </div>
       </div>
 
-      <!-- Acciones -->
+      <div class="section" id="box-himnario" style="display: none">
+        <div class="section-title">Contenido de Himnario</div>
+        <label>Versión de Himnario</label>
+        <select
+          id="him-ver"
+          class="field"
+          onchange="cambiarVersionHimnario()"
+        ></select>
+        <label>Seleccionar Himno</label>
+        <select
+          id="him-num"
+          class="field"
+          onchange="cargarPasajesHimno()"
+        ></select>
+        <div class="nav-vers">
+          <button class="btn btn-secondary" onclick="navegarHimnario(-1)">
+            ◀ Anterior
+          </button>
+          <button class="btn btn-secondary" onclick="navegarHimnario(1)">
+            Siguiente ▶
+          </button>
+        </div>
+      </div>
+
       <button class="btn btn-primary" onclick="lanzarLive()">
         🚀 Lanzar a pantalla
       </button>
@@ -567,10 +583,8 @@
       </button>
     </div>
 
-    <!-- Toast container -->
     <div id="toasts"></div>
 
-    <!-- Modal (solo acciones destructivas) -->
     <div id="modal">
       <div class="modal-box">
         <div class="modal-title">¿Confirmar?</div>
@@ -585,12 +599,15 @@
     </div>
 
     <script>
-      /* ── Estado ── */
+      /* ── Estado Global ── */
       let estructura = {},
         presetsMemoria = [],
-        bibliaData = [];
+        bibliaData = [],
+        himnarioData = [];
       let versiculosActuales = [],
-        indiceVersiculo = 0;
+        himnoPasajesActuales = [];
+      let indiceVersiculo = 0,
+        indiceHimnoPasaje = 0;
       let catActual = "";
       let presetActivo = null;
       let modoEdicion = false;
@@ -609,7 +626,7 @@
         }, 2800);
       }
 
-      /* ── Modal (solo para acciones destructivas) ── */
+      /* ── Modal ── */
       function confirmar(texto, cb) {
         document.getElementById("modal-desc").textContent = texto;
         document.getElementById("modal").classList.add("on");
@@ -651,10 +668,10 @@
         catActual = Object.keys(estructura)[0] || "";
         if (catActual) cambiarCategoria(catActual);
         await cargarVersionesReales();
+        await cargarVersionesHimnario();
         badge(null);
       }
 
-      /* ── Selección de categoría (chips) ── */
       function seleccionarCat(cat, btn) {
         document
           .querySelectorAll("#cat-chips .chip")
@@ -668,7 +685,12 @@
         document.getElementById("box-bible").style.display =
           cat === "versiculos" ? "block" : "none";
 
-        /* Chips de plantilla */
+        document.getElementById("box-himnario").style.display =
+          cat === "himnarios" ? "block" : "none";
+
+        document.getElementById("box-datos").style.display =
+          cat === "versiculos" || cat === "himnarios" ? "none" : "block";
+
         const plantillas = estructura[cat] || [];
         const cont = document.getElementById("pla-chips");
         cont.innerHTML = "";
@@ -682,7 +704,6 @@
         });
         document.getElementById("pla").value = plantillas[0] || "";
 
-        /* Campos dinámicos */
         const dyn = document.getElementById("campos-dinamicos");
         if (cat === "creditos") {
           dyn.innerHTML = `
@@ -725,6 +746,7 @@
             toast("Selecciona versión, libro y capítulo.", "err");
             return;
           }
+
           const lista = await fetch(`/api/bible/${ver}/${lib}/${cap}`)
             .then((r) => r.json())
             .catch(() => []);
@@ -748,6 +770,24 @@
             };
             label = `${lib} ${cap}:${ran}`;
           }
+        } else if (cat === "himnarios") {
+          const ver = document.getElementById("him-ver").value;
+          const num = document.getElementById("him-num").value;
+          if (!ver || !num) {
+            toast("Selecciona versión e himno.", "err");
+            return;
+          }
+
+          himnoPasajesActuales = await fetch(`/api/himnario/${ver}/${num}`)
+            .then((r) => r.json())
+            .catch(() => []);
+          indiceHimnoPasaje = 0;
+          if (!himnoPasajesActuales.length) {
+            toast("El himno no tiene estrofas.", "err");
+            return;
+          }
+          await actualizarHimnarioEnPantalla();
+          return;
         } else if (cat === "creditos") {
           const filas = document.querySelectorAll("#area-list .area-row");
           datos = {
@@ -768,10 +808,10 @@
 
         await enviarAConfig(cat, datos);
         badge(label);
-        toast(`Lanzado: ${label}`);
+        toast(`🚀 EN PANTALLA: ${label}`, "ok");
       }
 
-      /* ── Navegación versículos ── */
+      /* ── Navegación e inyección ── */
       async function actualizarVersiculoEnPantalla() {
         const v = versiculosActuales[indiceVersiculo];
         const lib = document.getElementById("bib-lib").value;
@@ -780,10 +820,12 @@
           v1: `${v.numero}. ${v.texto}`,
           v2: `${lib} ${cap}`,
         });
-        badge(`${lib} ${cap}:${v.numero}`);
+        const label = `${lib} ${cap}:${v.numero}`;
+        badge(label);
+        toast(`📖 Lanzado: ${label}`, "ok");
       }
 
-      async function navegarVersiculo(dir) {
+      function navegarVersiculo(dir) {
         if (!versiculosActuales.length) {
           toast("Primero lanza un rango.", "inf");
           return;
@@ -791,10 +833,35 @@
         const n = indiceVersiculo + dir;
         if (n < 0 || n >= versiculosActuales.length) return;
         indiceVersiculo = n;
-        await actualizarVersiculoEnPantalla();
+        actualizarVersiculoEnPantalla();
       }
 
-      /* ── Enviar config ── */
+      async function actualizarHimnarioEnPantalla() {
+        if (!himnoPasajesActuales || himnoPasajesActuales.length === 0) return;
+
+        const p = himnoPasajesActuales[indiceHimnoPasaje];
+
+        await enviarAConfig("himnarios", {
+          v1: p.v1,
+          v2: p.v2,
+          tipo: p.tipo,
+        });
+
+        badge(p.identificador);
+        toast(`🎵 Cambiado a: ${p.identificador.replace("Himno ", "")}`, "ok");
+      }
+
+      function navegarHimnario(dir) {
+        if (!himnoPasajesActuales || !himnoPasajesActuales.length) {
+          toast("Primero selecciona un himno.", "inf");
+          return;
+        }
+        const n = indiceHimnoPasaje + dir;
+        if (n < 0 || n >= himnoPasajesActuales.length) return;
+        indiceHimnoPasaje = n;
+        actualizarHimnarioEnPantalla();
+      }
+
       async function enviarAConfig(cat, datos) {
         let config = {};
         try {
@@ -814,7 +881,6 @@
         });
       }
 
-      /* ── Apagar capa (sin confirmación) ── */
       async function apagarCapa() {
         let config = {};
         try {
@@ -830,10 +896,10 @@
         document
           .querySelectorAll(".preset-card")
           .forEach((c) => c.classList.remove("active"));
-        toast(`Capa "${catActual}" apagada.`, "inf");
+        toast(`⏹ Capa "${catActual.toUpperCase()}" removida con éxito`, "inf");
       }
 
-      /* ── Presets: cargar sidebar ── */
+      /* ── Presets ── */
       async function cargarPresetsLateral(cat) {
         presetsMemoria = await fetch(`/api/presets/${cat}`).then((r) =>
           r.json(),
@@ -848,80 +914,78 @@
           const div = document.createElement("div");
           div.className = "preset-card";
           div.innerHTML = `
-  <div class="preset-info">
-    <div class="preset-label">${p.label}</div>
-    <div class="preset-sub">${p.plantilla}</div>
-  </div>
-
-  <div style="display:flex;gap:4px;">
-
-    <button
-      class="btn-icon"
-      title="Editar"
-      onclick="editarPreset(${i}, event)">
-      ✎
-    </button>
-
-    <button
-      class="btn-icon"
-      title="Eliminar"
-      onclick="borrarPreset(${i}, event)">
-      ✕
-    </button>
-
-  </div>
-`;
+            <div class="preset-info">
+              <div class="preset-label">${p.label}</div>
+              <div class="preset-sub">${p.plantilla}</div>
+            </div>
+            <div style="display:flex;gap:4px;">
+              <button class="btn-icon" title="Editar" onclick="editarPreset(${i}, event)">✎</button>
+              <button class="btn-icon" title="Eliminar" onclick="borrarPreset(${i}, event)">✕</button>
+            </div>`;
           div.addEventListener("click", () => cargarPreset(p, div));
           lista.appendChild(div);
         });
       }
 
-      /* ── Presets: cargar en formulario ── */
       async function cargarPreset(p, div) {
         document
           .querySelectorAll(".preset-card")
           .forEach((c) => c.classList.remove("active"));
         div.classList.add("active");
-        // Seleccionar plantilla correcta en chips
         document.querySelectorAll("#pla-chips .chip").forEach((c) => {
           c.classList.toggle("active", c.dataset.pla === p.plantilla);
         });
         document.getElementById("pla").value = p.plantilla;
+
         if (p.datos.isBible) {
           document.getElementById("bib-ver").value = p.datos.params.ver;
           await cargarLibros(p.datos.params.lib);
-          await cargarCapitulos(p.datos.params.cap);
+          document.getElementById("bib-cap").value = p.datos.params.cap;
           document.getElementById("bib-range").value = p.datos.params.ran;
+        } else if (p.datos.isHimno) {
+          document.getElementById("him-ver").value = p.datos.params.ver;
+          await cambiarVersionHimnario(p.datos.params.num);
         } else if (p.datos.lista) {
           document.getElementById("area-list").innerHTML = "";
           p.datos.lista.forEach((item) =>
             addArea(item.area, item.nombres.join(", ")),
           );
         } else {
-          const v1 = document.getElementById("v1"),
-            v2 = document.getElementById("v2");
-          if (v1) v1.value = p.datos.v1 || "";
-          if (v2) v2.value = p.datos.v2 || "";
+          if (document.getElementById("v1"))
+            document.getElementById("v1").value = p.datos.v1 || "";
+          if (document.getElementById("v2"))
+            document.getElementById("v2").value = p.datos.v2 || "";
         }
       }
 
-      /* ── Presets: guardar (sin confirmación) ── */
       async function guardarPreset() {
-        let datos = {};
+        let datos = {},
+          label = "";
 
         if (catActual === "versiculos") {
+          const lib = document.getElementById("bib-lib").value;
+          const cap = document.getElementById("bib-cap").value;
+          const ran = document.getElementById("bib-range").value;
+          label = `${lib} ${cap}:${ran}`;
           datos = {
             isBible: true,
             params: {
               ver: document.getElementById("bib-ver").value,
-              lib: document.getElementById("bib-lib").value,
-              cap: document.getElementById("bib-cap").value,
-              ran: document.getElementById("bib-range").value.trim(),
+              lib,
+              cap,
+              ran,
             },
           };
+        } else if (catActual === "himnarios") {
+          const ver = document.getElementById("him-ver").value;
+          const num = document.getElementById("him-num").value;
+          const selElement = document.getElementById("him-num");
+          const textoSeleccionado =
+            selElement.options[selElement.selectedIndex]?.text || "Himno";
+          label = textoSeleccionado;
+          datos = { isHimno: true, params: { ver, num } };
         } else if (catActual === "creditos") {
           const filas = document.querySelectorAll("#area-list .area-row");
-
           datos = {
             lista: Array.from(filas).map((f) => ({
               area: f.querySelector(".in-a").value,
@@ -932,27 +996,11 @@
                 .filter(Boolean),
             })),
           };
-        } else {
-          datos = {
-            v1: document.getElementById("v1")?.value || "",
-            v2: document.getElementById("v2")?.value || "",
-          };
-        }
-
-        let label = "";
-
-        if (catActual === "versiculos") {
-          const lib = document.getElementById("bib-lib").value;
-          const cap = document.getElementById("bib-cap").value;
-          const ran = document.getElementById("bib-range").value;
-
-          label = `${lib} ${cap}:${ran}`;
-        } else if (catActual === "creditos") {
           label = "Créditos";
         } else {
           const v1 = document.getElementById("v1")?.value || "";
           const v2 = document.getElementById("v2")?.value || "";
-
+          datos = { v1, v2 };
           label = v1 || v2 || "Sin título";
         }
 
@@ -964,48 +1012,34 @@
 
         if (modoEdicion && presetActivo !== null) {
           presetsMemoria[presetActivo] = preset;
-
           toast("Preset actualizado.");
         } else {
           presetsMemoria.push(preset);
-
           toast("Preset guardado.");
         }
 
         await fetch(`/api/presets/${catActual}`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(presetsMemoria),
         });
 
         modoEdicion = false;
         presetActivo = null;
-
         cargarPresetsLateral(catActual);
       }
 
       function editarPreset(i, e) {
         e.stopPropagation();
-
         presetActivo = i;
         modoEdicion = true;
-
         const cards = document.querySelectorAll(".preset-card");
-
         cards.forEach((c) => c.classList.remove("active"));
-
-        if (cards[i]) {
-          cards[i].classList.add("active");
-        }
-
+        if (cards[i]) cards[i].classList.add("active");
         cargarPreset(presetsMemoria[i], cards[i]);
-
         toast("Modo edición activado.", "inf");
       }
 
-      /* ── Presets: borrar individual (sin confirmación) ── */
       async function borrarPreset(i, e) {
         e.stopPropagation();
         presetsMemoria.splice(i, 1);
@@ -1018,7 +1052,6 @@
         toast("Preset eliminado.", "inf");
       }
 
-      /* ── Presets: limpiar todos (CON confirmación) ── */
       async function limpiarPresets() {
         await fetch(`/api/presets/${catActual}`, {
           method: "POST",
@@ -1029,7 +1062,7 @@
         toast("Todos los presets eliminados.", "inf");
       }
 
-      /* ── Biblia ── */
+      /* ── Mapeos de Biblia ── */
       async function cargarVersionesReales() {
         const vers = await fetch("/api/bible/list").then((r) => r.json());
         const sel = document.getElementById("bib-ver");
@@ -1065,6 +1098,62 @@
           for (let i = 1; i <= libro.capitulos; i++)
             sel.innerHTML += `<option value="${i}">${i}</option>`;
         if (pre) sel.value = pre;
+      }
+
+      /* ── Mapeos de Himnario ── */
+      async function cargarVersionesHimnario() {
+        try {
+          const versiones = await fetch("/api/himnario/list").then((r) =>
+            r.json(),
+          );
+          const sel = document.getElementById("him-ver");
+          sel.innerHTML = '<option value="">-- Seleccionar Versión --</option>';
+          versiones.forEach(
+            (v) =>
+              (sel.innerHTML += `<option value="${v}">${v.replace(".xml", "")}</option>`),
+          );
+        } catch (error) {
+          console.error("Error al cargar versiones de himnario:", error);
+        }
+      }
+
+      async function cambiarVersionHimnario(preSelectedHimno = null) {
+        const version = document.getElementById("him-ver").value;
+        const selHimno = document.getElementById("him-num");
+        selHimno.innerHTML =
+          '<option value="">-- Seleccionar Himno --</option>';
+        if (!version) return;
+
+        try {
+          const listaHimnos = await fetch(
+            `/api/himnario/${version}/metadata`,
+          ).then((r) => r.json());
+          listaHimnos.forEach((h) => {
+            selHimno.innerHTML += `<option value="${h.numero}">${h.numero} - ${h.titulo}</option>`;
+          });
+          if (preSelectedHimno) {
+            selHimno.value = preSelectedHimno;
+            await cargarPasajesHimno();
+          }
+        } catch (error) {
+          console.error("Error al obtener la lista de himnos:", error);
+        }
+      }
+
+      async function cargarPasajesHimno() {
+        const version = document.getElementById("him-ver").value;
+        const numero = document.getElementById("him-num").value;
+        if (!version || !numero) return;
+
+        try {
+          himnoPasajesActuales = await fetch(
+            `/api/himnario/${version}/${numero}`,
+          ).then((r) => r.json());
+          indiceHimnoPasaje = 0;
+          await actualizarHimnarioEnPantalla();
+        } catch (error) {
+          console.error("Error al obtener los pasajes del himno:", error);
+        }
       }
 
       /* ── Créditos ── */

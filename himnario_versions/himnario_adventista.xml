@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<himnario nombre="Himnario Adventista">
+
+    <himno numero="20" titulo="A Dios, el Padre celestial">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>A Dios, el Padre celestial;</linea>
+                <linea>al Hijo, nuestro Redentor;</linea>
+                <linea>al eternal Consolador,</linea>
+                <linea>unidos, todos alabad.</linea>
+                <linea>Amén.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="32" titulo="Nos reunimos en tu santuario">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Nos reunimos en tu santuario,</linea>
+                <linea>donde santos ángeles te rinden su loor.</linea>
+                <linea>Vamos a adorar tu gran nombre;</linea>
+                <linea>en la santidad de tu presencia te alabo, Señor.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="41" titulo="Gracia, amor y comunión">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Que la gracia de Jesús,</linea>
+                <linea>el amor de Dios el Padre</linea>
+                <linea>y la comunión del Espíritu nos llenen hoy.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>Que la gracia de Jesús,</linea>
+                <linea>el amor de Dios el Padre</linea>
+                <linea>y la comunión del Espíritu eternal</linea>
+                <linea>perduren por siempre en nuestro corazón.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="141" titulo="¡Alabadle!">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>¡Alabadle, fiel salvador compasivo!</linea>
+                <linea>¡Canta, oh tierra, canta su magno amor!</linea>
+                <linea>¡Saludadle, ángeles santos en gloria,</linea>
+                <linea>tributad al nombre de Cristo honor!</linea>
+                <linea>En sus brazos él llevará a sus hijos;</linea>
+                <linea>guardarálos siempre cual fiel pastor.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>¡Alabadle, fiel Salvador compasivo!,</linea>
+                <linea>quien por nuestras faltas su vida dio.</linea>
+                <linea>¡Roca eterna, nuestra inmortal Esperanza,</linea>
+                <linea>Rey del cielo que en la cruz murió!</linea>
+                <linea>¡Dadle gloria; nuestros pesares lleva!</linea>
+                <linea>¡Alabad tan ancho y profundo amor!</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>¡Alabadle, fiel Salvador compasivo,</linea>
+                <linea>querubines que obedecéis su Ley!</linea>
+                <linea>Cristo en gloria reina por siglos de siglos;</linea>
+                <linea>nuestro Abogado, Profeta y Rey.</linea>
+                <linea>Cristo viene, grande en poder y gloria.</linea>
+                <linea>¡Viene, sí, del mundo ya vencedor!</linea>
+            </estrofa>
+        </estrofas>
+        <coro>
+            <linea>¡Entonad canción a su excelsa grandeza;</linea>
+            <linea>ensalzadle en himnos de santo amor!</linea>
+        </coro>
+    </himno>
+
+    <himno numero="147" titulo="A Dios sea gloria">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>A Dios sea gloria, es el Creador,</linea>
+                <linea>y amó tanto al mundo que a su Hijo dio,</linea>
+                <linea>quien puso su vida muriendo en la cruz</linea>
+                <linea>y abrió los portales de gloria y luz.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>Cantad a su gloria, pues Hijo es de Dios.</linea>
+                <linea>Su amor inefable a todos nos dio.</linea>
+                <linea>Contad hoy la historia de la redención;</linea>
+                <linea>que todos los pueblos entonen canción.</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>Ya sea en el canto o en dulce oración,</linea>
+                <linea>load al sublime y fiel Redentor.</linea>
+                <linea>Que joven y anciano proclamen su amor;</linea>
+                <linea>que sordos y mudos le rindan loor.</linea>
+            </estrofa>
+        </estrofas>
+        <coro>
+            <linea>¡Exaltad a Jesús! Es el Rey y Señor.</linea>
+            <linea>¡Alabad a Jesús! Es el buen Salvador.</linea>
+            <linea>Load sobre todos su nombre inmortal.</linea>
+            <linea>Él salva a sus hijos del yugo del mal.</linea>
+        </coro>
+    </himno>
+
+    <himno numero="154" titulo="Dad gloria al Cordero Rey">
+        <estrofas>
+
+            <estrofa numero="1">
+                <linea>Dad gloria al Cordero Rey, suprema potestad;</linea>
+                <linea>de su divino amor la Ley postrados aceptad,</linea>
+                <linea repeticion="true">de su divino amor la Ley postrados aceptad.</linea>
+            </estrofa>
+
+            <estrofa numero="2">
+                <linea>Vosotros, hijos de Israel, residuo de su grey,</linea>
+                <linea>loores dad a Emanuel y proclamadle Rey,</linea>
+                <linea repeticion="true">loores dad a Emanuel y proclamadle Rey.</linea>
+            </estrofa>
+
+            <estrofa numero="3">
+                <linea>Naciones todas, escuchad y obedeced su Ley</linea>
+                <linea>de gracia, amor y santidad, y proclamadle Rey,</linea>
+                <linea repeticion="true">de gracia, amor y santidad, y proclamadle Rey.</linea>
+            </estrofa>
+
+            <estrofa numero="4">
+                <linea>Dios quiera que con los que están del trono en derredor,</linea>
+                <linea>con cantos por la eternidad a Cristo demos honor,</linea>
+                <linea repeticion="true">con cantos por la eternidad a Cristo demos honor.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="292" titulo="Por fe en Cristo, el Redentor">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Por fe en Cristo, el Redentor,</linea>
+                <linea>se salva hoy el pecador;</linea>
+                <linea>aunque sin merecer perdón,</linea>
+                <linea>recibe plena salvación.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>La vida antigua ya pasó</linea>
+                <linea>y todo en nuevo se tornó,</linea>
+                <linea>y aunque nada tenga aquí,</linea>
+                <linea>herencia eterna tiene allí.</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>Aquí cual peregrino es;</linea>
+                <linea>mansión allá tendrá después,</linea>
+                <linea>arriba en gloria con Jesús,</linea>
+                <linea>quien redimiole en la cruz.</linea>
+            </estrofa>
+        </estrofas>
+        <coro>
+            <linea>¡Oh, gracia excelsa del amor,</linea>
+            <linea>que Dios perdone al pecador!</linea>
+            <linea>Si quiere presto confesar</linea>
+            <linea>sus culpas, y en Jesús confiar,</linea>
+            <linea>encontrará la salvación,</linea>
+            <linea>pues él obró la redención.</linea>
+        </coro>
+    </himno>
+
+    <himno numero="417" titulo="Dame la fe de mi Jesús">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Dame la fe de mi Jesús,</linea>
+                <linea>es mi oración, oh buen Señor:</linea>
+                <linea>la fe que al alma da la paz,</linea>
+                <linea>la fe que salva de temor;</linea>
+                <linea>fe de los santos galardón,</linea>
+                <linea>gloriosa fe de salvación.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>Dame la fe que trae poder,</linea>
+                <linea>que a los demonios da terror;</linea>
+                <linea>que fieras no podrán vencer,</linea>
+                <linea>ni dominarla el opresor;</linea>
+                <linea>fe de los santos galardón,</linea>
+                <linea>gloriosa fe de salvación.</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>Dame la fe que vencerá,</linea>
+                <linea>bendita fe de mi Jesús.</linea>
+                <linea>Dame la fe que fijará</linea>
+                <linea>mi vista en su divina cruz;</linea>
+                <linea>fe de los santos galardón,</linea>
+                <linea>gloriosa fe de salvación.</linea>
+            </estrofa>
+            <estrofa numero="4">
+                <linea>Dame la fe que da el valor,</linea>
+                <linea>que ayuda al débil a triunfar,</linea>
+                <linea>que todo sufre con amor</linea>
+                <linea>y puede en el dolor cantar;</linea>
+                <linea>fe de los santos galardón,</linea>
+                <linea>gloriosa fe de salvación.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="508" titulo="Contendamos siempre por nuestra fe">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Contendamos siempre por nuestra fe,</linea>
+                <linea>aunque ruja el mundo en derredor;</linea>
+                <linea>nunca el tentador nos podrá vencer,</linea>
+                <linea>pues nos librará el Señor.</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>No seamos tibios de corazón,</linea>
+                <linea>ni dejemos nunca el primer amor;</linea>
+                <linea>mantengamos firme la profesión</linea>
+                <linea>de la fe del Salvador.</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>Procuremos todos la santidad,</linea>
+                <linea>sin la cual ninguno verá al Señor;</linea>
+                <linea>gozo, paz y eterna felicidad</linea>
+                <linea>Cristo da al vencedor.</linea>
+            </estrofa>
+        </estrofas>
+        <coro>
+            <linea>Si vencemos aquí, reinaremos allí,</linea>
+            <linea>en la gloria celestial;</linea>
+            <linea>si llevamos la cruz por amor de Jesús,</linea>
+            <linea>la corona él nos dará.</linea>
+        </coro>
+    </himno>
+
+    <himno numero="500" titulo="Hazme tu siervo">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Hazme tu siervo, humilde y fiel.</linea>
+                <linea>que ayude a todos con tu amor.</linea>
+                <linea>Sea el ruego de mi corazón:</linea>
+                <linea>hazme tu siervo, quiero escucharte</linea>
+                <linea>y obedecerte, Señor.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="501" titulo="Mi vida al servicio de Dios">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Mi vida al servicio de Dios</linea>
+                <linea>es el lema que vibra en mi ser.</linea>
+                <linea>Al lado de Cristo persisto en vivir,</linea>
+                <linea>y así muy feliz siempre estoy.</linea>
+                <linea>Andando, sonriendo, sirviendo,</linea>
+                <linea>cantando al cielo yo voy;</linea>
+                <linea>pues quiero sentir</linea>
+                <linea>el placer de vivir por Jesús.</linea>
+            </estrofa>
+        </estrofas>
+    </himno>
+
+    <himno numero="561" titulo="Oigo del Señor la voz llamando">
+        <estrofas>
+            <estrofa numero="1">
+                <linea>Oigo del Señor la voz llamando:</linea>
+                <linea>"¿Quién irá este día a trabajar?</linea>
+                <linea>¿Quién me traerá a los perdidos?</linea>
+                <linea>¿Quién la senda angosta mostrará?"</linea>
+            </estrofa>
+            <estrofa numero="2">
+                <linea>Cuando el mismo Dios tocó al profeta,</linea>
+                <linea>dándole un nuevo corazón,</linea>
+                <linea>y este oyó la voz que le llamaba:</linea>
+                <linea>"Heme aquí", él pronto contestó.</linea>
+            </estrofa>
+            <estrofa numero="3">
+                <linea>Muchos miles y millones mueren,</linea>
+                <linea>en la más completa oscuridad;</linea>
+                <linea>anda pronto tú a rescatarlos;</linea>
+                <linea>di: "Maestro, voy con voluntad".</linea>
+            </estrofa>
+            <estrofa numero="4">
+                <linea>Pronto el Redentor vendrá en gloria,</linea>
+                <linea>las trompetas lo anunciarán;</linea>
+                <linea>y entonces se oirá al Maestro</linea>
+                <linea>que dirá: "Bien hecho, siervo fiel".</linea>
+            </estrofa>
+        </estrofas>
+        <coro>
+            <linea>Habla, oh Dios, háblame;</linea>
+            <linea>habla, y pronto te contestaré;</linea>
+            <linea>habla, oh Dios, háblame,</linea>
+            <linea>habla, y yo respondo: "Heme aquí".</linea>
+        </coro>
+    </himno>
+
+
+</himnario>
