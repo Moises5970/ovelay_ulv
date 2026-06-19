@@ -1,12 +1,12 @@
 {
     "lower_thirds": {
-        "plantilla": "2026_graduacion",
+        "plantilla": "2026_graduacion_colivi",
         "datos": {
             "v1": "Moises",
             "v2": "Martinez",
             "v3": "Adorando con diezmos y ofrendas",
-            "v4": ""
+            "v4": "hola"
         },
-        "update": 1779489389351
+        "update": 1781886051983
     }
 }
