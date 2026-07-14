@@ -1,0 +1,29 @@
+:root{
+  --bg:        #0a0a0c;   /* fondo base */
+  --s1:        #111115;   /* sidebar, modales */
+  --s2:        #18181f;   /* secciones, cards */
+  --s3:        #21212b;   /* hover, inputs */
+  --s4:        #2c2c38;   /* bordes visibles */
+
+  /* Texto */
+  --text:      #e2e2ec;
+  --muted:     #6b6b80;
+  --dim:       #3a3a4a;
+ 
+  /* Acento operativo */
+  --accent:    #3d5afe;
+  --accent-h:  #536dfe;
+  --accent-bg: rgba(61, 90, 254, .12);
+ 
+  /* Estados broadcast */
+  --live:      #ff1744;
+  --live-bg:   rgba(255, 23, 68, .10);
+  --success:   #00e676;
+  --warn:      #ff9100;
+  --danger:    #ff1744;
+ 
+  /* Forma y espaciado */
+  --r:    6px;
+  --rlg:  8px;
+  --gap:  12px;
+}

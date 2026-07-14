@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overlay Control</title>
+
+    <link rel="stylesheet" href="./css/variables.css" />
+    <link rel="stylesheet" href="./css/components.css" />
+    <link rel="stylesheet" href="./css/layout.css" />
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="topbar-title">Overlay Control</span>
+
+      <div style="display: flex; align-items: center; gap: 8px">
+        <div class="conn-dot" id="conn-dot"></div>
+        <div id="badge-cont-mobile"></div>
+      </div>
+    </div>
+
+    <!--LAYOUT PRINCIPAL-->
+
+    <div class="layout">
+      <!--SIDEBAR-->
+
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+          <div class="sidebar-label">Categoría</div>
+          <div id="cat-chips" class="chip-group"></div>
+        </div>
+
+        <div id="lista-presets" class="preset-list">
+          <p class="preset-empty">Sin presets guardados</p>
+        </div>
+
+        <div class="sidebar-foot">
+          <button class="btn btn-off" onclick="apagarCapa()">
+            ⏹ Quitar capa
+          </button>
+          <button
+            class="btn btn-danger"
+            onclick="
+              confirmar(
+                '¿Borrar todos los presets de esta categoría? Esta acción no se puede deshacer.',
+                limpiarPresets,
+              )
+            "
+          >
+            🗑 Limpiar presets
+          </button>
+        </div>
+      </div>
+
+      <!--Main-->
+
+      <div class="main" id="main">
+        <div class="main-header">
+          <span class="main-title">
+            <span
+              class="conn-dot"
+              id="conn-dot-desktop"
+              style="
+                display: inline-block;
+                vertical-align: middle;
+                margin-right: 6px;
+              "
+            ></span>
+            Overlay Control
+          </span>
+          <div id="badge-cont"></div>
+        </div>
+
+        <!--Plantilla activa-->
+
+        <div class="section">
+          <div class="section-title">Plantilla</div>
+          <div id="pla-chips" class="pla-chips"></div>
+          <input type="hidden" id="pla" />
+        </div>
+
+        <!--Campos genericos-->
+
+        <div class="section" id="box-datos">
+          <div class="section-title" id="datos-section-title">Datos</div>
+          <div id="campos-dinamicos">
+            <label>Linea principal</label>
+            <input type="text" id="v1" placeholder="Nombre(s)" />
+            <label>Linea Secundaria</label>
+            <input type="text" id="v2" placeholder="Participación" />
+          </div>
+        </div>
+
+        <!-- Sección: Biblia (oculta por defecto) -->
+        <div class="section" id="box-bible" style="display: none">
+          <div class="section-title">Pasaje bíblico</div>
+          <label>Versión</label>
+          <select id="bib-ver" class="field" onchange="cargarLibros()"></select>
+          <label>Libro</label>
+          <select
+            id="bib-lib"
+            class="field"
+            onchange="cargarCapitulos()"
+          ></select>
+          <label>Capítulo</label>
+          <select id="bib-cap" class="field"></select>
+          <label>Versículo(s) — ej: 3 o 1-5</label>
+          <input type="text" id="bib-range" placeholder="1" />
+          <div class="nav-vers">
+            <button class="btn btn-secondary" onclick="navegarVersiculo(-1)">
+              ◀ Anterior
+            </button>
+            <button class="btn btn-secondary" onclick="navegarVersiculo(1)">
+              Siguiente ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- Sección: Himnario (oculta por defecto) -->
+        <div class="section" id="box-himnario" style="display: none">
+          <div class="section-title">Himnario</div>
+          <label>Versión</label>
+          <select
+            id="him-ver"
+            class="field"
+            onchange="cambiarVersionHimnario()"
+          ></select>
+          <label>Himno</label>
+          <input
+            type="text"
+            id="him-num"
+            list="him-num-list"
+            placeholder="Escribe número o nombre del himno..."
+            onchange="cargarPasajesHimno()"
+          />
+          <datalist id="him-num-list"></datalist>
+          <div class="nav-vers">
+            <button class="btn btn-secondary" onclick="navegarHimnario(-1)">
+              ◀ Anterior
+            </button>
+            <button class="btn btn-secondary" onclick="navegarHimnario(1)">
+              Siguiente ▶
+            </button>
+          </div>
+        </div>
+
+        <!--Acciones principales-->
+
+        <button class="btn btn-primary" onclick="lanzarLive()">
+          Lanzar a pantalla
+        </button>
+        <button class="btn btn-secondary" onclick="guardarPreset()">
+          Guardar como preset
+        </button>
+      </div>
+    </div>
+
+    <!-- TABS MÓVIL -->
+    <div class="tab-bar" id="tab-bar">
+      <button id="tab-presets" class="active" onclick="activarTab('presets')">
+        <span class="tab-icon">☰</span>Presets
+      </button>
+      <button id="tab-control" onclick="activarTab('control')">
+        <span class="tab-icon">⚙</span>Control
+      </button>
+    </div>
+
+    <!-- TOASTS Y MODAL -->
+    <div id="toasts"></div>
+    <div id="modal">
+      <div class="modal-box">
+        <div class="modal-title">¿Confirmar acción?</div>
+        <div class="modal-desc" id="modal-desc"></div>
+        <div class="modal-acts">
+          <button class="btn btn-secondary" onclick="cerrarModal()">
+            Cancelar
+          </button>
+          <button class="btn btn-danger" id="modal-ok">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./js/socket.client.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/presets.js"></script>
+  <script src="./js/bible.js"></script>
+  <script src="./js/himnario.js"></script>
+  <script src="./js/overlay.js"></script>
+  <script src="./js/admin.js"></script>
+</html>

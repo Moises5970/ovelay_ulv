@@ -1,0 +1,161 @@
+.topbar {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--s1);
+    border-bottom: 1px solid var(--s4);
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+.topbar-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+/* Barra izquierda */
+.layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--s1);
+    border-right: 1px solid var(--s4);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sidebar-head {
+    padding: 14px 12px 10px;
+    border-bottom: 1px solid var(--s4);
+    flex-shrink: 0;
+}
+
+.sidebar-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.sidebar-foot {
+    padding: 8px;
+    border-top: 1px solid var(--s4);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+/* Main */
+.main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding: var(--gap);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    scrollbar-width: thin;
+    scrollbar-color: var(--s4) transparent;
+}
+
+/* ── HEADER DEL MAIN (solo desktop) ── */
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.main-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.tab-bar {
+    display: none;
+    border-top: 1px solid var(--s4);
+    background: var(--s1);
+    flex-shrink: 0;
+}
+
+.tab-bar button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 10px 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    transition: color .12s;
+}
+
+.tab-bar button.active      { color: var(--accent); }
+.tab-bar button span.tab-icon { font-size: 16px; }
+
+/* ── RESPONSIVE ──
+   En ≤680px: layout vertical, topbar visible, tabs visibles.
+   Sidebar y main se ocultan/muestran con JS según la tab activa. */
+@media (max-width: 680px) {
+body { overflow: auto; }
+
+.topbar  { display: flex; }
+.tab-bar { display: flex; }
+
+.layout {
+    flex-direction: column;
+    overflow: visible;
+    height: auto;
+  }
+ 
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--s4);
+    max-height: 50dvh;
+    display: none;
+  }
+ 
+  .sidebar.tab-active { display: flex; }
+  .main.tab-active    { display: flex; }
+ 
+  .main {
+    display: none;
+    padding: 10px;
+    gap: 10px;
+  }
+ 
+  .chip { min-height: 38px; font-size: 12px; }
+}
+ 
+@media (min-width: 681px) {
+  .sidebar     { display: flex !important; }
+  .main        { display: flex !important; }
+  .main-header { display: flex; }
+}

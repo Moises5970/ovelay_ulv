@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Output</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      .layer {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        border: none;
+        background: transparent;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        pointer-events: none;
+      }
+
+      .layer.visible {
+        opacity: 1;
+      }
+
+      #conn-status {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        font-family: monospace;
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 4px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      #conn-status.visible {
+        opacity: 1;
+      }
+
+      #conn-status.disconnected {
+        background: rgba(255, 23, 68, 0.85);
+        color: #fff;
+      }
+      #conn-status.reconnecting {
+        background: rgba(255, 145, 0, 0.85);
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="capas"></div>
+
+    <div id="conn-status"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- expone io() globalmente -->
+    <script src="./js/output.js"></script>
+    <!-- usa io() sin importar nada -->
+  </body>
+</html>

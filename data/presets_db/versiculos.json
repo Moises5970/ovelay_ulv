@@ -1,0 +1,15 @@
+[
+    {
+        "label": "Génesis 1:1-10",
+        "plantilla": "elegante",
+        "datos": {
+            "isBible": true,
+            "params": {
+                "ver": "Spanish RVR1960",
+                "lib": "Génesis",
+                "cap": "1",
+                "ran": "1-10"
+            }
+        }
+    }
+]
