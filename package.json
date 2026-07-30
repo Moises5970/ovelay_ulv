@@ -1,0 +1,8 @@
+{
+  "name": "cintillasofficial",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps/server",
+    "start": "npm run start --prefix apps/server"
+  }
+}
