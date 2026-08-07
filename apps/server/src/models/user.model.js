@@ -8,7 +8,6 @@
 
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';         // hasheo de contraseñas.
-import { Timestamp } from 'mongodb';
 
 /**
  * Modelo del documento de usuario.
@@ -20,10 +19,8 @@ const userSchema = new mongoose.Schema(
     {
         nombre: {
             type: String,
-            required: [true, 'The name is required'],
+            required: true,
             trim: true,
-            minlength: [2, 'The name must be at least 2 characters long'],
-            maxlength: [50, 'The name cannot exceed 50 characters']
         },
         email: {
             type: String,
@@ -72,7 +69,7 @@ const userSchema = new mongoose.Schema(
     - createdAt: cuándo se creó el documento
     - updatedAt: cuándo se modificó por última vez
     */
-    timestamps: true,
+    Timestamp: true,
     }
 );
 
@@ -97,6 +94,7 @@ userSchema.pre('save', async function (next) {
         14 → ~1000ms (para datos muy sensibles)
     */
     this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
+    next();
 });
 
 /*

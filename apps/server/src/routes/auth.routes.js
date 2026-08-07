@@ -3,14 +3,14 @@
  *
  * Dos rutas:
  *   POST /api/auth/register → crear cuenta nueva
-import User from '../models/user.model.js'
+ *   import User from '../models/user.model.js'
  *   POST /api/auth/login    → iniciar sesión, recibir JWT
  */
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 import { validate } from '../middleware/validate.js'
-import { registerSchema, loginSchema } from './auth.schemas.js';
+import { loginSchema, registerSchema } from './auth.schemas.js';
 
 const router = express.Router();
 
@@ -36,7 +36,7 @@ function generateToken(userId, rol) {
  * validate(registerSchema) corre ANTES del handler
  * Si el body no cumple el schema, devuelve 400 y el handler nunca corre
  */
-router.post('/register',  validate(registerSchema), async (req, res, next) => {
+router.post('/register', validate(registerSchema), async (req, res, next) => {
     try {
         const { nombre, email, password } = req.body;
 

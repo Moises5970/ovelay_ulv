@@ -32,10 +32,6 @@ export function validate(schema) {
         */
         const issues = error.issues ?? [];
 
-        const mensajes = issues.length > 0
-          ? issues.map(e => e.message)
-          : ['El cuerpo de la petición no puede estar vacío'];
-
         return res.status(400).json({
           ok: false,
           mensaje: mensajes.join('. '),

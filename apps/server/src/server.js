@@ -16,6 +16,8 @@ import { Server } from 'socket.io';
 import { connectDB } from './config/mongodb.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js'
+import { autenticar, autorizar } from './middleware/auth.js';
+
 
 const app = express();
 const server = createServer(app);
@@ -54,3 +56,16 @@ async function start() {
 
 // lanzar
 start();
+
+// Ruta de prueba — solo usuarios autenticados
+app.get('/api/me', autenticar, (req, res) => {
+  res.json({
+    ok: true,
+    usuario: req.usuario, // { userId, rol, iat, exp } — viene del token
+  });
+});
+
+// Ruta de prueba — solo admins
+app.get('/api/admin', autenticar, autorizar('admin'), (req, res) => {
+  res.json({ ok: true, mensaje: 'Bienvenido admin' });
+});
