@@ -182,7 +182,13 @@ app.get("/api/init", (req, res) => {
 
 app.get("/api/presets/:cat", (req, res) => {
   const file = path.join(DB_PATH, `${req.params.cat}.json`);
-  res.json(fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : []);
+  if (!fs.existsSync(file)) return res.json([]);
+  try {
+    const raw = fs.readFileSync(file, "utf8").trim();
+    res.json(raw ? JSON.parse(raw) : []);
+  } catch {
+    res.json([]); // archivo vacío o JSON corrupto → devolver lista vacía
+  }
 });
 
 app.post("/api/presets/:cat", (req, res) => {
@@ -283,4 +289,4 @@ app.get("/api/himnario/:version/:himnoNumero", async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log("🚀 Motor v6.8 Activo en puerto 5000"));
+app.listen(5500, () => console.log("🚀 Motor v6.8 Activo en puerto 5000"));
