@@ -1,8 +1,10 @@
 import express from "express";
+import { createServer } from "http";
 import dotenv from "dotenv";
 import { connectDB } from "./config/mongo.js";
+import { configureSocket } from "./config/socket.js";
 import authRoutes from "./routes/auth.routes.js";
-import roomsRoutes from './routes/rooms.routes.js'
+import roomsRoutes from "./routes/rooms.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authenticate, authorize } from "./middleware/auth.js";
 
@@ -29,10 +31,15 @@ app.get("/api/me", authenticate, (req, res) => {
   res.json({ ok: true, mensaje: "Bienvenido, admin" });
 });*/
 
+// envuelve Express en un servidor HTTP nativo de Node
+const httpServer = createServer(app);
+// inyecta Socket.io a ese mismo servidor
+configureSocket(httpServer);
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`[server] corriendo en puerto ${PORT}`));
+  httpServer.listen(PORT, () => console.log(`[server] corriendo en puerto ${PORT}`));
 });
