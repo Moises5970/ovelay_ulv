@@ -9,7 +9,7 @@ const router = Router();
 // generar token del usuario
 function generateToken (user) {
     return jwt.sign(
-        {userId: user._id, rol: user.rol},
+        {userId: user._id},/* rol: user.rol*/
         process.env.JWT_SECRET,
         {expiresIn: process.env.JWT_EXPIRES_IN || "5d"}
     );

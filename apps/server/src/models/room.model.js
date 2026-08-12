@@ -19,12 +19,8 @@ const roomSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
     },
-    operadores: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    admins: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    operadores: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     configActual: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
@@ -40,7 +36,8 @@ const roomSchema = new mongoose.Schema(
 // Generar el slug automaticamente a partir del nombre si no se define
 roomSchema.pre("validate", function () {
   if (!this.slug && this.nombre) {
-    this.slug = this.nombre.toLowerCase
+    this.slug = this.nombre
+      .toLowerCase()
       .trim()
       .normalize("NFD") // separa la letra de su acento
       .replace(/[\u0300-\u036f]/g, "") // quita acentos

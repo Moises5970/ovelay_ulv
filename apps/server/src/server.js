@@ -25,9 +25,9 @@ app.get("/api/me", authenticate, (req, res) => {
   res.json({ ok: true, usuario: req.usuario });
 });
 
-app.get("/api/admin", authenticate, authorize("admin"), (req, res) => {
+/*app.get("/api/admin", authenticate, authorize("admin"), (req, res) => {
   res.json({ ok: true, mensaje: "Bienvenido, admin" });
-});
+});*/
 
 app.use(errorHandler);
 

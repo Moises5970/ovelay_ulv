@@ -29,11 +29,13 @@ const userSchema = new mongoose.Schema(
             required: true,
             select: false, // no se envia
         },
+        /*
+        El rol lo asigna la room, no es propiedad del usuario
         rol: {
             type: String,
             enum: ["admin", "operador"],
             default: "operador",
-        },
+        },*/
         orgId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Organization",

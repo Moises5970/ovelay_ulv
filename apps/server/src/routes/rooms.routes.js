@@ -1,8 +1,13 @@
 import { Router } from "express";
 import Room from "../models/room.model.js";
+import User from "../models/user.model.js";
 import { validate } from "../middleware/validate.js";
-import { authenticate } from "../middleware/auth.js";
-import { createRoomSchema, updateRoomSchema } from "./rooms.schemas.js";
+import { authenticate, verificarRolEnRoom } from "../middleware/auth.js";
+import {
+  agregarMiembroSchema,
+  createRoomSchema,
+  updateRoomSchema,
+} from "./rooms.schemas.js";
 import { symbol } from "zod";
 
 const router = Router();
@@ -10,97 +15,77 @@ const router = Router();
 // Todas las rutas de rooms requieren estar logueado
 router.use(authenticate);
 
-/**
- * CREATE
- * POST /api/rooms/*
- */
+// CREATE — el creador queda como admin de SU propio room
 router.post("/", validate(createRoomSchema), async (req, res) => {
   const { nombre, slug } = req.body;
-
-  const roomNew = new Room({
-    nombre,
-    slug,
-    operadores: [req.user.userId],
-  });
-
+  const roomNew = new Room({ nombre, slug, admins: [req.user.userId] });
   await roomNew.save();
-
-  res.status(201).json({
-    ok: true,
-    room: roomNew,
-  });
+  res.status(201).json({ ok: true, room: roomNew });
 });
 
-/**
- * READ
- * listar todos los rooms activos
- * GET /api/
- */
+// READ — lista solo los rooms donde el usuario participa (admin u operador)
 router.get("/", async (req, res) => {
-  const rooms = await Room.find({ activo: true });
-  res.json({
-    ok: true,
-    rooms,
+  const rooms = await Room.find({
+    activo: true,
+    $or: [{ admins: req.user.userId }, { operadores: req.user.userId }],
   });
+
+  res.json({ ok: true, rooms });
 });
 
-/**
- * READ
- * un room por slug
- * GET /api/:slug
- */
-router.get("/:slug", async (req, res) => {
-  const room = await Room.findOne({ slug: req.params.slug, activo: true });
-
-  if (!room) {
-    return res.status(404).json({
-      ok: false,
-      error: "Room no encontrado",
-    });
-  }
-
-  res.json({
-    ok: true,
-    room,
-  });
+// READ — un room, requiere pertenecer a él (cualquier rol)
+router.get("/:slug", verificarRolEnRoom("admin", "operador"), (req, res) => {
+  res.json({ ok: true, room: req.room });
 });
 
-/**
- * UPDATE
- * Actualizar room
- * PATCH /api/:slug
- */
-router.patch("/:slug", validate(updateRoomSchema), async (req, res) => {
-  const room = await Room.findOneAndUpdate(
-    { slug: req.params.slug, activo: true },
-    { $set: req.body },
-    { new: true, runValidators: true },
-  );
+// UPDATE - solo admins del room
+router.patch(
+  "/:slug",
+  verificarRolEnRoom("admin"),
+  validate(updateRoomSchema),
+  async (req, res) => {
+    Object.assign(req.room, req.body);
+    await req.room.save();
+    res.json({ ok: true, room: req.room });
+  },
+);
 
-  if (!room) {
-    return res.status(404).json({ ok: false, error: "Room no encontrado" });
-  }
-
-  res.json({ ok: true, room });
-});
-
-/**
- * DELETE
- * Soft dekete
- * DELETE /api/:slug
- */
-router.delete("/:slug", async (req, res) => {
-  const room = await Room.findByIdAndUpdate(
-    { slug: req.params.slug, activo: true },
-    { $set: { activo: false } },
-    { new: true },
-  );
-
-  if (!room) {
-    return res.status(404).json({ ok: false, error: " Room no encontrado" });
-  }
-
+// DELETE (soft) - solo admins
+router.delete("/:slug", verificarRolEnRoom("admin"), async (req, res) => {
+  req.room.activo = false;
+  await req.room.save();
   res.json({ ok: true, message: "Room desactivada" });
 });
+
+// AGREGAR MIEMBRO - solo admins
+router.post(
+  "/:slug/miembros", verificarRolEnRoom("admin"),
+  validate(agregarMiembroSchema),
+  async (req, res) => {
+    const { email, rol } = req.body;
+
+    const usuario = await User.findOne({ email });
+    if (!usuario) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Usuario no encontrado" });
+    }
+
+    const campo = rol === "admin" ? "admins" : "operadores";
+    const ready = req.room[campo].some(
+      (id) => id.toString() === usuario._id.toString(),
+    );
+    if (ready) {
+      return res
+        .status(409)
+        .json({ ok: false, error: "El usuario ya tiene ese rol en este room" });
+    }
+
+    req.room[campo].push(usuario._id);
+    await req.room.save();
+
+    res.status(201).json({ ok: true, room: req.room });
+  }
+);
 
 export default router;
