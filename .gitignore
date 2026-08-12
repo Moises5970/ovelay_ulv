@@ -4,3 +4,10 @@
 /estructuras
 
 *.rar
+
+node_modules/
+.env
+build/
+.dart_tool/
+
+test-user.js
