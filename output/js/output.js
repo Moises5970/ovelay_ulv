@@ -1,4 +1,4 @@
-const CAPAS_VALIDAS = ["versiculos", "lower_thirds", "himnarios", "creditos"];
+const CAPAS_VALIDAS = ["versiculo", "lower_third", "himnario", "credito"];
 
 const roomSlug = new URLSearchParams(location.search).get("room") || "default";
 const socket = io("http://localhost:4000");
@@ -33,14 +33,14 @@ socket.on("overlay:apagar", ({ layer }) => {
  * @param {Object} param0.datos - Datos para actualizar la capa.
  * @returns {void} No retorna ningún valor, solo realiza validaciones y acciones.
  */
-function updateLayer({ layer, categoria, platilla, data }) {
+function updateLayer({ layer, categoria, plantilla, data }) {
   if (!CAPAS_VALIDAS.includes(layer)) {
     console.error("[motor] capa desconocida", layer);
     return;
   }
 
-  const iframe = document.getElementById(`capa-${layer}`);
-  const rutPlantilla = `../../templates/${categoria}/${platilla}/index.html`;
+  const iframe = document.getElementById(`layer-${layer}`);
+  const rutPlantilla = `../../templates/${categoria}/${plantilla}/index.html`;
 
   if (plantillaCurrentLayer[layer] !== rutPlantilla) {
     plantillaCurrentLayer[layer] = rutPlantilla;
@@ -52,13 +52,13 @@ function updateLayer({ layer, categoria, platilla, data }) {
 }
 
 function oofLayer(layer) {
-  const iframe = document.getElementById(`capa-${layer}`);
+  const iframe = document.getElementById(`layer-${layer}`);
   sendData(iframe, {}, layer);
 }
 
 function sendData(iframe, data, layer) {
   try {
-    iframe.contentWindow?.receiveData?.(data);
+    iframe.contentWindow?.recibirDatos?.(data);
   } catch (e) {
     console.error("[motor] recibir datos fallo en capa: ", layer, e.message);
   }
