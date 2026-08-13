@@ -8,9 +8,22 @@ export function registerOverlayHandlers(io, socket) {
   });
 
   // El operador manda un cambio de overlay; solo el room correcto lo recibe
-  socket.on("overlay:actualizar", ({ roomSlug, config }) => {
-    // manda el evento solo a los sockets unidos a ese room, no a todos los conectados al servidor.
-    io.to(roomSlug).emit("overlay:actualizar", config);
-    console.log(`[socket] overlay actualizado en room: ${roomSlug}`);
+  socket.on(
+    "overlay:actualizar",
+    ({ roomSlug, layer, categoria, plantilla, data }) => {
+      // manda el evento solo a los sockets unidos a ese room, no a todos los conectados al servidor.
+      io.to(roomSlug).emit("overlay:actualizar", {
+        layer,
+        categoria,
+        plantilla,
+        data,
+      });
+      console.log(`[socket] overlay actualizado en room: ${roomSlug}`);
+    },
+  );
+
+  // El operador apaga la capa
+  socket.on("overlay:apagar", ({ roomSlug, layer }) => {
+    io.to(roomSlug).emit("overlay:apagar", { layer });
   });
 }

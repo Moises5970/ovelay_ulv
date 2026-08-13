@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <!--
+      MOTOR DE OVERLAYS v7 — index.html
+      ─────────────────────────────────
+      Este archivo corre dentro de OBS/Browser Source.
+      NO lo edites a menos que sepas lo que haces.
+
+      FLUJO:
+        1. Cada 1s consulta config.json
+        2. Por cada entrada en el config crea (o actualiza) un <iframe>
+        3. Si una entrada desaparece del config, la capa se oculta con fade y se elimina
+        4. Cuando la plantilla cambia → recarga el iframe completo
+        5. Cuando solo cambia "update" → llama recibirDatos() sin recargar el iframe
+    -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      .layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        border: none;
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <iframe id="layer-versiculo" class="layer"></iframe>
+    <iframe id="layer-lower_third" class="layer"></iframe>
+    <iframe id="layer-himnario" class="layer"></iframe>
+    <iframe id="layer-credito" class="layer"></iframe>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="js/output.js"></script>
+  </body>
+</html>

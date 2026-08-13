@@ -1,5 +1,7 @@
 import express from "express";
 import { createServer } from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import { connectDB } from "./config/mongo.js";
 import { configureSocket } from "./config/socket.js";
@@ -11,6 +13,9 @@ import { authenticate, authorize } from "./middleware/auth.js";
 // Usamos las variable de entorno
 dotenv.config();
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const raizMonorepo = path.resolve(__dirname, "../../..");
+
 const app = express();
 app.use(express.json());
 
@@ -20,6 +25,11 @@ app.get("/api/health", (req, res) => {
 });
 
 // rutas
+
+// Sirve output/ y templates/ como archivos estáticos, con el mismo origen
+app.use("/output", express.static(path.join(raizMonorepo, "output")));
+app.use("/templates", express.static(path.join(raizMonorepo, "templates")));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomsRoutes);
 
@@ -41,5 +51,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 4000;
 
 connectDB().then(() => {
-  httpServer.listen(PORT, () => console.log(`[server] corriendo en puerto ${PORT}`));
+  httpServer.listen(PORT, () =>
+    console.log(`[server] corriendo en puerto ${PORT}`),
+  );
 });
