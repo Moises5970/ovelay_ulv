@@ -1,0 +1,106 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { XMLParser } from "fast-xml-parser";
+
+// rutas para la versiones de la Biblia
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CARPETA_HIMNARIOS = path.resolve(
+  __dirname,
+  "../../../../data/himnario_versions",
+);
+
+// cache en memoria: { "version": {estructura} }
+const cacheHymns = {};
+
+const parser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+});
+
+/**
+ * Lista los nombres de los archivos sin la extencion como versiones del himnario disponibles
+ * @returns {string[]}
+ */
+export function listVersHymns() {
+  return (
+    fs
+      // buscar en las versiones de los himnarios
+      .readdirSync(CARPETA_HIMNARIOS)
+      // filtrar los .xml
+      .filter((archivo) => archivo.endsWith(".xml"))
+      // quitar al extencion del nombre
+      .map((archivo) => archivo.replace(".xml", ""))
+  );
+}
+
+function loadHymns(version) {
+  if (cacheHymns[version]) return cacheHymns[version];
+
+  // rutas de versiones
+  const pathFile = path.join(CARPETA_HIMNARIOS, `${version}.xml`);
+  // si no se encuentra
+  if (!fs.existsSync(pathFile)) {
+    throw new Error(`Version de Himnario no encontrada: ${version}`);
+  }
+
+  const xmlCrudo = fs.readFileSync(pathFile, "utf-8");
+  const datos = parser.parse(xmlCrudo);
+
+  // himnos
+  const himnos = Array.isArray(datos.himnario.himno)
+    ? datos.himnario.himno
+    : [datos.himnario.himno];
+  const himnosPorNumero = {};
+
+  // recorrer himnos
+  for (const himno of himnos) {
+    const numero = Number(himno["@_numero"]);
+    const estrofasCrudas = Array.isArray(himno.estrofas.estrofa)
+      ? himno.estrofas.estrofa
+      : [himno.estrofas.estrofa];
+
+    const estrofas = estrofasCrudas.map((estrofa) => ({
+      numero: Number(estrofa["numero"]),
+      lineas: Array.isArray(estrofa.linea) ? estrofa.linea : [estrofa.linea],
+    }));
+
+    himnosPorNumero[numero] = {
+      numero,
+      titulo: himno["@_titulo"],
+      estrofas,
+    };
+  }
+
+  const resultado = { nombre: datos.himnario["@_nombre"], himnosPorNumero };
+  cacheHymns[version] = resultado;
+  return resultado;
+}
+
+/**
+ *Devuelve la lista de himnos (número + título) de un himnario.
+ * @param {string} version
+ * @returns {{numero:number, titulo:string}[]}
+ */
+export function getHymns(version) {
+  const { himnosPorNumero } = loadHymns(version);
+  return Object.values(himnosPorNumero)
+    .map(({ numero, titulo }) => ({ numero, titulo }))
+    .sort((a, b) => a.numero - b.numero);
+}
+
+/**
+ * Devuelve un himno completo, con todas sus estrofas y líneas.
+ * @param {string} version
+ * @param {number} numeroHimno
+ * @returns {objet|null}
+ */
+export function getHimno(version, numeroHimno) {
+  const { himnosPorNumero } = loadHymns(version);
+  return himnosPorNumero[numeroHimno] || null;
+}
+
+export function getEstrofa(version, numeroHimno, numeroEstrofa) {
+  const himno = getHimno(version, numeroHimno);
+  return himno?.estrofas.find((e) => e.numero === numeroEstrofa) || null;
+}

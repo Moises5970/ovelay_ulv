@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.routes.js";
 import roomsRoutes from "./routes/rooms.routes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { authenticate, authorize } from "./middleware/auth.js";
+import bibleRoutes from "./routes/bible.routes.js";
+import himnarioRoutes from "./routes/himnario.routes.js";
 
 // Usamos las variable de entorno
 dotenv.config();
@@ -29,6 +31,9 @@ app.get("/api/health", (req, res) => {
 // Sirve output/ y templates/ como archivos estáticos, con el mismo origen
 app.use("/output", express.static(path.join(raizMonorepo, "output")));
 app.use("/templates", express.static(path.join(raizMonorepo, "templates")));
+
+app.use("api/bible", bibleRoutes);
+app.use("api/himnario", himnarioRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomsRoutes);
