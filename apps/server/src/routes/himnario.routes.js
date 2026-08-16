@@ -5,6 +5,7 @@ import {
   getHymns,
   getHimno,
   getEstrofa,
+  getCoro,
 } from "../utils/himnarioParser.js";
 import { version } from "mongoose";
 
@@ -31,6 +32,25 @@ router.get("/:version/himnos", (req, res) => {
   }
 });
 
+router.get("/:version/:numero", (req, res) => {
+  const himno = getHimno(req.params.version, Number(req.params.numero));
+
+  if (!himno) {
+    return res.status(404).json({ ok: false, error: "Himno no encontrado" });
+  }
+  res.json({ ok: true, himno });
+});
+
+router.get("/:version/:numero/coro", (req, res) => {
+  const coro = getCoro(req.params.version, Number(req.params.numero));
+  if (!coro) {
+    return res
+      .status(404)
+      .json({ ok: false, error: "Este himno no tiene coro" });
+  }
+  res.json({ ok: true, coro });
+});
+
 /**
  * Himno completo consus estrofas
  * GET /api/himnario/:version/:numero/:estrofa
@@ -44,7 +64,7 @@ router.get("/:version/:numero/:estrofa", (req, res) => {
   );
 
   if (!estrofaEncontrada) {
-    return res.status(404).json({ pk: false, error: "Estrofa no encontrada" });
+    return res.status(404).json({ ok: false, error: "Estrofa no encontrada" });
   }
   res.json({ ok: true, estrofa: estrofaEncontrada });
 });

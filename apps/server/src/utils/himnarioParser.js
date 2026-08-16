@@ -61,14 +61,24 @@ function loadHymns(version) {
       : [himno.estrofas.estrofa];
 
     const estrofas = estrofasCrudas.map((estrofa) => ({
-      numero: Number(estrofa["numero"]),
+      numero: Number(estrofa["@_numero"]),
       lineas: Array.isArray(estrofa.linea) ? estrofa.linea : [estrofa.linea],
     }));
+
+    // En caso de tener coro
+    let coro = null;
+    if (himno.coro) {
+      const lineasCoro = Array.isArray(himno.coro.linea)
+        ? himno.coro.linea
+        : [himno.coro.linea];
+      coro = { lineas: lineasCoro };
+    }
 
     himnosPorNumero[numero] = {
       numero,
       titulo: himno["@_titulo"],
       estrofas,
+      coro, // null si el himno no tiene coro
     };
   }
 
@@ -100,7 +110,25 @@ export function getHimno(version, numeroHimno) {
   return himnosPorNumero[numeroHimno] || null;
 }
 
+/**
+ * Devuelve una estrofa de un himno especifico
+ * @param {string} version
+ * @param {number} numeroHimno
+ * @param {number} numeroEstrofa
+ * @returns {{numero:number, lineas:string[]}|null}
+ */
 export function getEstrofa(version, numeroHimno, numeroEstrofa) {
   const himno = getHimno(version, numeroHimno);
   return himno?.estrofas.find((e) => e.numero === numeroEstrofa) || null;
+}
+
+/**
+ * Devuelve el coro de un himno, o null si no tiene.
+ * @param {string} version
+ * @param {number} numeroHimno
+ * @returns {{lineas:string[]}|null}
+ */
+export function getCoro(version, numeroHimno) {
+  const himno = getHimno(version, numeroHimno);
+  return himno?.coro || null;
 }

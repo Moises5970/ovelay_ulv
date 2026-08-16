@@ -6,7 +6,6 @@ import {
   getChapter,
   getVers,
 } from "../utils/bibleParser.js";
-import { version } from "mongoose";
 
 const router = Router();
 router.use(authenticate);
@@ -27,8 +26,24 @@ router.get("/:version/libros", (req, res) => {
   try {
     res.json({ ok: true, libros: getBooks(req.params.version) });
   } catch (err) {
-    res.status(404).json({ ok: false, error: err.mesagge });
+    res.status(404).json({ ok: false, error: err.message });
   }
+});
+
+/**
+ * El capitulo completo
+ * GET /api/bible/:version/:capitulo
+ */
+router.get("/:version/:libro/:capitulo", (req, res) => {
+  // cosas requeridas en la url
+  const { version, libro, capitulo } = req.params;
+  const versiculos = getChapter(version, Number(libro), Number(capitulo));
+
+  if (!versiculos) {
+    return res.status(404).json({ ok: false, error: "Capitulo no encontrado" });
+  }
+
+  res.json({ ok: true, versiculos });
 });
 
 /**
@@ -49,7 +64,7 @@ router.get("/:version/:libro/:capitulo/:verso", (req, res) => {
       .status(404)
       .json({ ok: false, error: "Versiculo no encontrado" });
   }
-  res.json({ ok: false, texto });
+  res.json({ ok: true, texto });
 });
 
 export default router;

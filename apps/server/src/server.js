@@ -32,8 +32,8 @@ app.get("/api/health", (req, res) => {
 app.use("/output", express.static(path.join(raizMonorepo, "output")));
 app.use("/templates", express.static(path.join(raizMonorepo, "templates")));
 
-app.use("api/bible", bibleRoutes);
-app.use("api/himnario", himnarioRoutes);
+app.use("/api/bible", bibleRoutes);
+app.use("/api/himnario", himnarioRoutes);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/rooms", roomsRoutes);

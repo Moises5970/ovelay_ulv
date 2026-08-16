@@ -2,8 +2,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { XMLParser } from "fast-xml-parser";
-import { error } from "console";
-import { version } from "os";
 
 // rutas para la versiones de la Biblia
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -188,7 +186,7 @@ function loadBible(version) {
 export function getBooks(version) {
   const biblia = loadBible(version);
   return Object.values(biblia)
-    .map(({ numero, nombre }) => ({ nombre, nombre }))
+    .map(({ numero, nombre }) => ({ numero, nombre }))
     .sort((a, b) => a.numero - b.numero);
 }
 
@@ -207,18 +205,13 @@ export function getChapter(version, numeroLibro, numeroCapitulo) {
 /**
  * Devuelve el texto de un versiculo especifico
  * para el overlay, donde el operador manda una sola referencia a la vez.
- * @param {string} versiculo 
- * @param {number} numeroLibro 
- * @param {number} numeroCapitulo 
- * @param {number} numeroVersiculo 
- * @returns 
+ * @param {string} versiculo
+ * @param {number} numeroLibro
+ * @param {number} numeroCapitulo
+ * @param {number} numeroVersiculo
+ * @returns
  */
-export function getVers(
-  versiculo,
-  numeroLibro,
-  numeroCapitulo,
-  numeroVersiculo,
-) {
+export function getVers(version, numeroLibro, numeroCapitulo, numeroVersiculo) {
   const capitulo = getChapter(version, numeroLibro, numeroCapitulo);
   return capitulo?.[numeroVersiculo] || null;
 }
